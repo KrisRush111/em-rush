@@ -1,0 +1,1393 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Raccoon Clicker - Бизнес</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .progress-bar {
+            height: 20px;
+            transition: width 0.3s ease;
+        }
+        .business-card {
+            transition: all 0.2s ease;
+        }
+        .business-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        .upgrade-item {
+            transition: all 0.2s ease;
+        }
+        .upgrade-item:hover {
+            transform: scale(1.02);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .modal {
+            transition: all 0.3s ease;
+            opacity: 0;
+            visibility: hidden;
+        }
+        .modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .business-icon {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+        }
+        .business-progress {
+            height: 8px;
+            transition: width 0.3s ease;
+        }
+        .notification {
+            animation: fadeIn 0.3s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .pulse {
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        .level-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .business-card-container {
+            position: relative;
+        }
+        .prestige-badge {
+            position: absolute;
+            top: -6px;
+            left: -6px;
+            background: linear-gradient(45deg, #f59e0b, #f97316);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .quantity-badge {
+            position: absolute;
+            bottom: -6px;
+            right: -6px;
+            background: linear-gradient(45deg, #3b82f6, #1d4ed8);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .business-instance {
+            position: relative;
+        }
+        .name-input {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            width: calc(100% - 20px);
+            background: rgba(255,255,255,0.9);
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 2px 5px;
+            font-size: 12px;
+            z-index: 10;
+        }
+
+         /* Футер с навигацией */
+         .nav-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            z-index: 100;
+        }
+        
+        .nav-item {
+            transition: all 0.2s ease;
+        }
+        
+        .nav-item:hover {
+            transform: translateY(-5px);
+        }
+        
+        .nav-item.active {
+            color: #3B82F6;
+        }
+        
+        /* Анимация для уведомлений */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .notification {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+    </style>
+</head>
+
+<body class="bg-gray-50 min-h-screen flex flex-col" oncontextmenu="return false;">
+    <!-- Основной контейнер игры -->
+    <div id="game-container" class="container mx-auto px-4 py-8 flex-grow mb-16">
+        <!-- Карточка игрока -->
+        <div class="bg-white rounded-xl p-6 shadow-sm mb-6">
+            <div class="flex justify-between items-center mb-4">
+                <div class="bg-blue-100 text-blue-800 px-4 py-2 rounded-full font-semibold">
+                    <span class="currency-icon"></span>
+                    <span id="coins">0</span> RCC
+                </div>
+                <div class="bg-green-100 text-green-800 px-4 py-2 rounded-full font-semibold">
+                    <i class="fas fa-coins mr-2"></i>
+                    <span id="income">0</span> RCC/15 сек
+                </div>
+            </div>
+            
+            <div class="mb-4">
+                <h2 class="text-xl font-bold text-gray-800 mb-2">Ваши бизнесы</h2>
+                <div id="business-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Бизнесы будут добавляться сюда -->
+                </div>
+            </div>
+            
+            <button id="open-business-modal" class="w-full bg-green-500 hover:bg-green-600 text-white py-3 px-4 rounded-lg font-medium transition flex items-center justify-center">
+                <i class="fas fa-plus-circle mr-2"></i> Открыть новый бизнес
+            </button>
+        </div>
+    </div>
+
+<!-- Футер с навигацией -->
+<footer class="nav-footer fixed bottom-0 left-0 right-0 bg-white shadow z-50">
+    <div class="container mx-auto px-4 py-3">
+        <div class="flex justify-around">
+            <!-- Меню -->
+            <a href="menu.html" class="nav-item flex flex-col items-center text-gray-600 hover:text-blue-500">
+                <i class="fas fa-bars text-2xl mb-1"></i>
+                <span class="text-xs">Меню</span>
+            </a>
+
+            <!-- Бизнес -->
+            <a href="business.html" class="nav-item flex flex-col items-center text-green-500">
+                <i class="fas fa-business-time text-2xl mb-1"></i>
+                <span class="text-xs">Бизнес</span>
+            </a>
+
+            <!-- Достижения -->
+            <a href="achievements.html" class="nav-item flex flex-col items-center text-gray-600 hover:text-yellow-500">
+                <i class="fas fa-trophy text-2xl mb-1"></i>
+                <span class="text-xs">Достижения</span>
+            </a>
+
+            <!-- Настройки -->
+            <a href="settings.html" class="nav-item flex flex-col items-center text-gray-600 hover:text-purple-500">
+                <i class="fas fa-cog text-2xl mb-1"></i>
+                <span class="text-xs">Настройки</span>
+            </a>
+        </div>
+    </div>
+</footer>
+
+
+    <!-- Модальное окно выбора бизнеса -->
+    <div id="business-modal" class="modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold text-gray-800">Открыть новый бизнес</h3>
+                    <button id="close-business-modal" class="text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Бизнесы будут добавляться сюда -->
+                    <div class="business-card bg-white border border-gray-200 rounded-lg p-4">
+                        <div class="flex items-start mb-3">
+                            <div class="business-icon bg-blue-100 text-blue-600 mr-3">
+                                <i class="fas fa-book"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-gray-800">Библиотека</h4>
+                                <p class="text-sm text-gray-600">+500 RCC/15 сек</p>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm font-semibold text-gray-700">20,000 RCC</span>
+                            <button data-business="library" class="buy-business-btn bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-medium transition">
+                                Купить
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="business-card bg-white border border-gray-200 rounded-lg p-4">
+                        <div class="flex items-start mb-3">
+                            <div class="business-icon bg-purple-100 text-purple-600 mr-3">
+                                <i class="fas fa-landmark"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-gray-800">Музей</h4>
+                                <p class="text-sm text-gray-600">+1,500 RCC/15 сек</p>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm font-semibold text-gray-700">75,000 RCC</span>
+                            <button data-business="museum" class="buy-business-btn bg-purple-500 hover:bg-purple-600 text-white px-3 py-1 rounded-full text-sm font-medium transition">
+                                Купить
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="business-card bg-white border border-gray-200 rounded-lg p-4">
+                        <div class="flex items-start mb-3">
+                            <div class="business-icon bg-red-100 text-red-600 mr-3">
+                                <i class="fas fa-theater-masks"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-gray-800">Театр</h4>
+                                <p class="text-sm text-gray-600">+3,000 RCC/15 сек</p>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm font-semibold text-gray-700">150,000 RCC</span>
+                            <button data-business="theater" class="buy-business-btn bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-full text-sm font-medium transition">
+                                Купить
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="business-card bg-white border border-gray-200 rounded-lg p-4">
+                        <div class="flex items-start mb-3">
+                            <div class="business-icon bg-yellow-100 text-yellow-600 mr-3">
+                                <i class="fas fa-film"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-gray-800">Киностудия</h4>
+                                <p class="text-sm text-gray-600">+10,000 RCC/15 сек</p>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm font-semibold text-gray-700">1,000,000 RCC</span>
+                            <button data-business="studio" class="buy-business-btn bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded-full text-sm font-medium transition">
+                                Купить
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Новые бизнесы -->
+                    <div class="business-card bg-white border border-gray-200 rounded-lg p-4">
+                        <div class="flex items-start mb-3">
+                            <div class="business-icon bg-indigo-100 text-indigo-600 mr-3">
+                                <i class="fas fa-gamepad"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-gray-800">Игровая студия</h4>
+                                <p class="text-sm text-gray-600">+25,000 RCC/15 сек</p>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm font-semibold text-gray-700">5,000,000 RCC</span>
+                            <button data-business="game-studio" class="buy-business-btn bg-indigo-500 hover:bg-indigo-600 text-white px-3 py-1 rounded-full text-sm font-medium transition">
+                                Купить
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="business-card bg-white border border-gray-200 rounded-lg p-4">
+                        <div class="flex items-start mb-3">
+                            <div class="business-icon bg-pink-100 text-pink-600 mr-3">
+                                <i class="fas fa-rocket"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-gray-800">Космическая компания</h4>
+                                <p class="text-sm text-gray-600">+100,000 RCC/15 сек</p>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm font-semibold text-gray-700">25,000,000 RCC</span>
+                            <button data-business="space-company" class="buy-business-btn bg-pink-500 hover:bg-pink-600 text-white px-3 py-1 rounded-full text-sm font-medium transition">
+                                Купить
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="business-card bg-white border border-gray-200 rounded-lg p-4">
+                        <div class="flex items-start mb-3">
+                            <div class="business-icon bg-green-100 text-green-600 mr-3">
+                                <i class="fas fa-robot"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-gray-800">AI Лаборатория</h4>
+                                <p class="text-sm text-gray-600">+500,000 RCC/15 сек</p>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm font-semibold text-gray-700">100,000,000 RCC</span>
+                            <button data-business="ai-lab" class="buy-business-btn bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-full text-sm font-medium transition">
+                                Купить
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="business-card bg-white border border-gray-200 rounded-lg p-4">
+                        <div class="flex items-start mb-3">
+                            <div class="business-icon bg-orange-100 text-orange-600 mr-3">
+                                <i class="fas fa-city"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-gray-800">Городская недвижимость</h4>
+                                <p class="text-sm text-gray-600">+2,000,000 RCC/15 сек</p>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm font-semibold text-gray-700">500,000,000 RCC</span>
+                            <button data-business="real-estate" class="buy-business-btn bg-orange-500 hover:bg-orange-600 text-white px-3 py-1 rounded-full text-sm font-medium transition">
+                                Купить
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно бизнеса -->
+    <div id="business-details-modal" class="modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <div>
+                        <h3 id="business-modal-title" class="text-xl font-bold text-gray-800">Библиотека</h3>
+                        <span id="business-prestige" class="text-xs font-medium text-yellow-600 hidden">Престиж: <span id="business-prestige-level">0</span></span>
+                    </div>
+                    <button id="close-business-details-modal" class="text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <div class="bg-gray-50 rounded-lg p-4 mb-6">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="font-medium text-gray-700">Доход:</span>
+                        <span id="business-income" class="font-bold text-green-600">500 RCC/15 сек</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="font-medium text-gray-700">Количество:</span>
+                        <span id="business-quantity" class="font-bold text-blue-600">1</span>
+                    </div>
+                </div>
+                
+                <div class="mb-6">
+                    <h4 class="font-bold text-gray-800 mb-3">Действия</h4>
+                    <div class="grid grid-cols-2 gap-3">
+                        <button id="buy-another-btn" class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg font-medium transition flex items-center justify-center">
+                            <i class="fas fa-copy mr-2"></i> Купить еще
+                        </button>
+                        <button id="prestige-btn" class="bg-purple-500 hover:bg-purple-600 text-white py-2 px-4 rounded-lg font-medium transition flex items-center justify-center disabled:opacity-50" disabled>
+                            <i class="fas fa-star mr-2"></i> Престиж
+                        </button>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 class="font-bold text-gray-800 mb-3">Улучшения</h4>
+                    <div id="business-upgrades" class="space-y-3">
+                        <!-- Улучшения будут добавляться сюда -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Уведомление -->
+    <div id="notification" class="fixed top-4 left-1/2 transform -translate-x-1/2 bg-blue-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 hidden">
+        <div class="flex items-center">
+            <i class="fas fa-check-circle mr-2"></i>
+            <span id="notification-message">Уведомление</span>
+        </div>
+    </div>
+
+    <script>
+        // Глобальные переменные
+        let coins = 0;
+        let businessIncome = 0;
+        let currentBusiness = null;
+
+        // Данные бизнесов
+        const businesses = {
+            library: {
+                name: "Библиотека",
+                icon: "fa-book",
+                color: "blue",
+                baseIncome: 500,
+                price: 20000,
+                quantity: 0,
+                prestige: 0,
+                instances: [],
+                upgrades: [
+                    {
+                        name: "Новые книги",
+                        description: "Увеличивает доход на 25%",
+                        price: 10000,
+                        multiplier: 1.25,
+                        purchased: false,
+                        requiredQuantity: 1
+                    },
+                    {
+                        name: "Компьютерный зал",
+                        description: "Увеличивает доход на 50%",
+                        price: 25000,
+                        multiplier: 1.5,
+                        purchased: false,
+                        requiredQuantity: 3
+                    },
+                    {
+                        name: "Кафе",
+                        description: "Увеличивает доход на 100%",
+                        price: 50000,
+                        multiplier: 2,
+                        purchased: false,
+                        requiredQuantity: 5
+                    },
+                    {
+                        name: "Аудиокниги",
+                        description: "Увеличивает доход на 150%",
+                        price: 100000,
+                        multiplier: 2.5,
+                        purchased: false,
+                        requiredQuantity: 7
+                    },
+                    {
+                        name: "Филиалы",
+                        description: "Увеличивает доход на 200%",
+                        price: 200000,
+                        multiplier: 3,
+                        purchased: false,
+                        requiredQuantity: 10
+                    }
+                ]
+            },
+            museum: {
+                name: "Музей",
+                icon: "fa-landmark",
+                color: "purple",
+                baseIncome: 1500,
+                price: 75000,
+                quantity: 0,
+                prestige: 0,
+                instances: [],
+                upgrades: [
+                    {
+                        name: "Новая экспозиция",
+                        description: "Увеличивает доход на 25%",
+                        price: 30000,
+                        multiplier: 1.25,
+                        purchased: false,
+                        requiredQuantity: 1
+                    },
+                    {
+                        name: "Аудиогиды",
+                        description: "Увеличивает доход на 50%",
+                        price: 60000,
+                        multiplier: 1.5,
+                        purchased: false,
+                        requiredQuantity: 3
+                    },
+                    {
+                        name: "Интерактивные экраны",
+                        description: "Увеличивает доход на 100%",
+                        price: 120000,
+                        multiplier: 2,
+                        purchased: false,
+                        requiredQuantity: 5
+                    },
+                    {
+                        name: "VR тур",
+                        description: "Увеличивает доход на 150%",
+                        price: 250000,
+                        multiplier: 2.5,
+                        purchased: false,
+                        requiredQuantity: 7
+                    },
+                    {
+                        name: "Международные выставки",
+                        description: "Увеличивает доход на 200%",
+                        price: 500000,
+                        multiplier: 3,
+                        purchased: false,
+                        requiredQuantity: 10
+                    }
+                ]
+            },
+            theater: {
+                name: "Театр",
+                icon: "fa-theater-masks",
+                color: "red",
+                baseIncome: 3000,
+                price: 150000,
+                quantity: 0,
+                prestige: 0,
+                instances: [],
+                upgrades: [
+                    {
+                        name: "Новые декорации",
+                        description: "Увеличивает доход на 25%",
+                        price: 60000,
+                        multiplier: 1.25,
+                        purchased: false,
+                        requiredQuantity: 1
+                    },
+                    {
+                        name: "Профессиональный звук",
+                        description: "Увеличивает доход на 50%",
+                        price: 120000,
+                        multiplier: 1.5,
+                        purchased: false,
+                        requiredQuantity: 3
+                    },
+                    {
+                        name: "VIP-ложи",
+                        description: "Увеличивает доход на 100%",
+                        price: 250000,
+                        multiplier: 2,
+                        purchased: false,
+                        requiredQuantity: 5
+                    },
+                    {
+                        name: "Бродвейские постановки",
+                        description: "Увеличивает доход на 150%",
+                        price: 500000,
+                        multiplier: 2.5,
+                        purchased: false,
+                        requiredQuantity: 7
+                    },
+                    {
+                        name: "Международные гастроли",
+                        description: "Увеличивает доход на 200%",
+                        price: 1000000,
+                        multiplier: 3,
+                        purchased: false,
+                        requiredQuantity: 10
+                    }
+                ]
+            },
+            studio: {
+                name: "Киностудия",
+                icon: "fa-film",
+                color: "yellow",
+                baseIncome: 10000,
+                price: 1000000,
+                quantity: 0,
+                prestige: 0,
+                instances: [],
+                upgrades: [
+                    {
+                        name: "Новое оборудование",
+                        description: "Увеличивает доход на 25%",
+                        price: 300000,
+                        multiplier: 1.25,
+                        purchased: false,
+                        requiredQuantity: 1
+                    },
+                    {
+                        name: "Спецэффекты",
+                        description: "Увеличивает доход на 50%",
+                        price: 600000,
+                        multiplier: 1.5,
+                        purchased: false,
+                        requiredQuantity: 3
+                    },
+                    {
+                        name: "Звездный актер",
+                        description: "Увеличивает доход на 100%",
+                        price: 1200000,
+                        multiplier: 2,
+                        purchased: false,
+                        requiredQuantity: 5
+                    },
+                    {
+                        name: "Оскароносный режиссер",
+                        description: "Увеличивает доход на 150%",
+                        price: 2500000,
+                        multiplier: 2.5,
+                        purchased: false,
+                        requiredQuantity: 7
+                    },
+                    {
+                        name: "Голливудский контракт",
+                        description: "Увеличивает доход на 200%",
+                        price: 5000000,
+                        multiplier: 3,
+                        purchased: false,
+                        requiredQuantity: 10
+                    }
+                ]
+            },
+            "game-studio": {
+                name: "Игровая студия",
+                icon: "fa-gamepad",
+                color: "indigo",
+                baseIncome: 25000,
+                price: 5000000,
+                quantity: 0,
+                prestige: 0,
+                instances: [],
+                upgrades: [
+                    {
+                        name: "Новые движки",
+                        description: "Увеличивает доход на 25%",
+                        price: 1500000,
+                        multiplier: 1.25,
+                        purchased: false,
+                        requiredQuantity: 1
+                    },
+                    {
+                        name: "3D графика",
+                        description: "Увеличивает доход на 50%",
+                        price: 3000000,
+                        multiplier: 1.5,
+                        purchased: false,
+                        requiredQuantity: 3
+                    },
+                    {
+                        name: "VR поддержка",
+                        description: "Увеличивает доход на 100%",
+                        price: 6000000,
+                        multiplier: 2,
+                        purchased: false,
+                        requiredQuantity: 5
+                    },
+                    {
+                        name: "Киберспорт лига",
+                        description: "Увеличивает доход на 150%",
+                        price: 12000000,
+                        multiplier: 2.5,
+                        purchased: false,
+                        requiredQuantity: 7
+                    },
+                    {
+                        name: "Глобальный релиз",
+                        description: "Увеличивает доход на 200%",
+                        price: 25000000,
+                        multiplier: 3,
+                        purchased: false,
+                        requiredQuantity: 10
+                    }
+                ]
+            },
+            "space-company": {
+                name: "Космическая компания",
+                icon: "fa-rocket",
+                color: "pink",
+                baseIncome: 100000,
+                price: 25000000,
+                quantity: 0,
+                prestige: 0,
+                instances: [],
+                upgrades: [
+                    {
+                        name: "Новые двигатели",
+                        description: "Увеличивает доход на 25%",
+                        price: 10000000,
+                        multiplier: 1.25,
+                        purchased: false,
+                        requiredQuantity: 1
+                    },
+                    {
+                        name: "Спутники",
+                        description: "Увеличивает доход на 50%",
+                        price: 20000000,
+                        multiplier: 1.5,
+                        purchased: false,
+                        requiredQuantity: 3
+                    },
+                    {
+                        name: "Лунная база",
+                        description: "Увеличивает доход на 100%",
+                        price: 40000000,
+                        multiplier: 2,
+                        purchased: false,
+                        requiredQuantity: 5
+                    },
+                    {
+                        name: "Марсианская колония",
+                        description: "Увеличивает доход на 150%",
+                        price: 80000000,
+                        multiplier: 2.5,
+                        purchased: false,
+                        requiredQuantity: 7
+                    },
+                    {
+                        name: "Межзвездные полеты",
+                        description: "Увеличивает доход на 200%",
+                        price: 150000000,
+                        multiplier: 3,
+                        purchased: false,
+                        requiredQuantity: 10
+                    }
+                ]
+            },
+            "ai-lab": {
+                name: "AI Лаборатория",
+                icon: "fa-robot",
+                color: "green",
+                baseIncome: 500000,
+                price: 100000000,
+                quantity: 0,
+                prestige: 0,
+                instances: [],
+                upgrades: [
+                    {
+                        name: "Новые алгоритмы",
+                        description: "Увеличивает доход на 25%",
+                        price: 40000000,
+                        multiplier: 1.25,
+                        purchased: false,
+                        requiredQuantity: 1
+                    },
+                    {
+                        name: "Квантовые компьютеры",
+                        description: "Увеличивает доход на 50%",
+                        price: 80000000,
+                        multiplier: 1.5,
+                        purchased: false,
+                        requiredQuantity: 3
+                    },
+                    {
+                        name: "Искусственный интеллект",
+                        description: "Увеличивает доход на 100%",
+                        price: 150000000,
+                        multiplier: 2,
+                        purchased: false,
+                        requiredQuantity: 5
+                    },
+                    {
+                        name: "Глобальная нейросеть",
+                        description: "Увеличивает доход на 150%",
+                        price: 300000000,
+                        multiplier: 2.5,
+                        purchased: false,
+                        requiredQuantity: 7
+                    },
+                    {
+                        name: "Сингулярность",
+                        description: "Увеличивает доход на 200%",
+                        price: 600000000,
+                        multiplier: 3,
+                        purchased: false,
+                        requiredQuantity: 10
+                    }
+                ]
+            },
+            "real-estate": {
+                name: "Городская недвижимость",
+                icon: "fa-city",
+                color: "orange",
+                baseIncome: 2000000,
+                price: 500000000,
+                quantity: 0,
+                prestige: 0,
+                instances: [],
+                upgrades: [
+                    {
+                        name: "Новые здания",
+                        description: "Увеличивает доход на 25%",
+                        price: 200000000,
+                        multiplier: 1.25,
+                        purchased: false,
+                        requiredQuantity: 1
+                    },
+                    {
+                        name: "Торговые центры",
+                        description: "Увеличивает доход на 50%",
+                        price: 400000000,
+                        multiplier: 1.5,
+                        purchased: false,
+                        requiredQuantity: 3
+                    },
+                    {
+                        name: "Небоскребы",
+                        description: "Увеличивает доход на 100%",
+                        price: 800000000,
+                        multiplier: 2,
+                        purchased: false,
+                        requiredQuantity: 5
+                    },
+                    {
+                        name: "Элитные районы",
+                        description: "Увеличивает доход на 150%",
+                        price: 1500000000,
+                        multiplier: 2.5,
+                        purchased: false,
+                        requiredQuantity: 7
+                    },
+                    {
+                        name: "Международная сеть",
+                        description: "Увеличивает доход на 200%",
+                        price: 3000000000,
+                        multiplier: 3,
+                        purchased: false,
+                        requiredQuantity: 10
+                    }
+                ]
+            }
+        };
+
+        // Инициализация игры
+        function initGame() {
+            loadGame();
+            updateUI();
+            setupEventListeners();
+            
+            // Синхронизация с главной игрой
+            syncWithMainGame();
+            setInterval(syncWithMainGame, 1500);
+            
+            // Автоматическое начисление дохода каждые 15 секунд
+            setInterval(autoIncome, 15000);
+        }
+
+        function updateSharedCoins(newCoins) {
+            const shared = JSON.parse(localStorage.getItem('raccoonClickerShared') || '{}');
+            shared.coins = newCoins;
+            shared.timestamp = Date.now();
+            shared.lastUpdater = tabId;
+            localStorage.setItem('raccoonClickerShared', JSON.stringify(shared));
+        }
+
+
+        // Загрузка сохраненной игры
+        function loadGame() {
+            const savedData = localStorage.getItem('raccoonBusinessData');
+            if (savedData) {
+                const data = JSON.parse(savedData);
+                coins = data.coins || 0;
+                businessIncome = data.businessIncome || 0;
+                
+                // Загружаем данные бизнесов
+                for (const businessId in businesses) {
+                    if (data.businesses && data.businesses[businessId]) {
+                        businesses[businessId].quantity = data.businesses[businessId].quantity || 0;
+                        businesses[businessId].prestige = data.businesses[businessId].prestige || 0;
+                        businesses[businessId].instances = data.businesses[businessId].instances || [];
+                        
+                        // Загружаем улучшения
+                        if (data.businesses[businessId].upgrades) {
+                            for (let i = 0; i < businesses[businessId].upgrades.length; i++) {
+                                if (data.businesses[businessId].upgrades[i]) {
+                                    businesses[businessId].upgrades[i].purchased = data.businesses[businessId].upgrades[i].purchased;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // Также загружаем данные из главной игры
+            const mainGameData = localStorage.getItem('raccoonClickerShared');
+            if (mainGameData) {
+                const data = JSON.parse(mainGameData);
+                coins = data.coins || coins;
+            }
+        }
+
+        // Сохранение игры
+        function saveGame() {
+            const data = {
+                coins,
+                businessIncome,
+                businesses: {}
+            };
+            
+            // Сохраняем данные каждого бизнеса
+            for (const businessId in businesses) {
+                data.businesses[businessId] = {
+                    quantity: businesses[businessId].quantity,
+                    prestige: businesses[businessId].prestige,
+                    instances: businesses[businessId].instances,
+                    upgrades: businesses[businessId].upgrades.map(upgrade => ({
+                        purchased: upgrade.purchased
+                    }))
+                };
+            }
+            
+            localStorage.setItem('raccoonBusinessData', JSON.stringify(data));
+            
+            // Также обновляем данные в главной игре
+            updateSharedData();
+        }
+
+        // Обновление общих данных (для синхронизации с главной игрой)
+        function updateSharedData() {
+    let totalBusinessIncome = 0;
+    for (const businessId in businesses) {
+        if (businesses[businessId].quantity > 0) {
+            totalBusinessIncome += calculateBusinessIncome(businessId);
+        }
+    }
+
+    businessIncome = totalBusinessIncome;
+
+    const mainGameData = JSON.parse(localStorage.getItem('raccoonClickerShared') || '{}');
+
+    const sharedData = {
+        ...mainGameData,
+        coins,
+        businessIncome,
+        timestamp: Date.now() // <== важный момент
+    };
+
+    localStorage.setItem('raccoonClickerShared', JSON.stringify(sharedData));
+}
+
+        // Синхронизация с главной игрой
+        function syncWithMainGame() {
+            const mainGameData = localStorage.getItem('raccoonClickerShared');
+            if (mainGameData) {
+                const data = JSON.parse(mainGameData);
+                coins = data.coins || coins;
+                updateUI();
+            }
+        }
+
+        // Автоматический доход от бизнесов (каждые 15 секунд)
+        function autoIncome() {
+            let incomePer15Sec = 0;
+            for (const businessId in businesses) {
+                if (businesses[businessId].quantity > 0) {
+                    incomePer15Sec += calculateBusinessIncome(businessId);
+                }
+            }
+            
+            coins += incomePer15Sec;
+            updateUI();
+            saveGame();
+        }
+
+        // Настройка обработчиков событий
+        function setupEventListeners() {
+            // Модальное окно выбора бизнеса
+            document.getElementById('open-business-modal').addEventListener('click', openBusinessModal);
+            document.getElementById('close-business-modal').addEventListener('click', closeBusinessModal);
+            
+            // Модальное окно деталей бизнеса
+            document.getElementById('close-business-details-modal').addEventListener('click', closeBusinessDetailsModal);
+            
+            // Кнопки покупки бизнеса
+            document.querySelectorAll('.buy-business-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const businessId = this.getAttribute('data-business');
+                    buyBusiness(businessId);
+                });
+            });
+
+            // Кнопка покупки еще одного бизнеса
+            document.getElementById('buy-another-btn').addEventListener('click', function() {
+                if (currentBusiness) {
+                    buyAnotherBusiness(currentBusiness);
+                }
+            });
+
+            // Кнопка престижа
+            document.getElementById('prestige-btn').addEventListener('click', function() {
+                if (currentBusiness) {
+                    prestigeBusiness(currentBusiness);
+                }
+            });
+        }
+
+        // Открытие модального окна выбора бизнеса
+        function openBusinessModal() {
+            document.getElementById('business-modal').classList.add('active');
+        }
+
+        // Закрытие модального окна выбора бизнеса
+        function closeBusinessModal() {
+            document.getElementById('business-modal').classList.remove('active');
+        }
+
+        // Открытие модального окна деталей бизнеса
+        function openBusinessDetailsModal(businessId) {
+            currentBusiness = businessId;
+            const business = businesses[businessId];
+            
+            // Заполняем данные
+            document.getElementById('business-modal-title').textContent = business.name;
+            document.getElementById('business-income').textContent = formatNumber(calculateBusinessIncome(businessId)) + ' RCC/15 сек';
+            document.getElementById('business-quantity').textContent = business.quantity;
+            
+            // Престиж
+            const prestigeElement = document.getElementById('business-prestige');
+            const prestigeLevelElement = document.getElementById('business-prestige-level');
+            
+            if (business.prestige > 0) {
+                prestigeElement.classList.remove('hidden');
+                prestigeLevelElement.textContent = business.prestige;
+            } else {
+                prestigeElement.classList.add('hidden');
+            }
+            
+            // Кнопка престижа
+            const prestigeBtn = document.getElementById('prestige-btn');
+            if (business.quantity >= 10) {
+                prestigeBtn.disabled = false;
+                prestigeBtn.textContent = `Престиж (+${business.prestige + 1}x доход)`;
+            } else {
+                prestigeBtn.disabled = true;
+                prestigeBtn.textContent = `Требуется 10 бизнесов`;
+            }
+            
+            // Кнопка покупки еще одного бизнеса
+            document.getElementById('buy-another-btn').textContent = `Купить еще (${formatNumber(calculateBusinessPrice(businessId))} RCC)`;
+            
+            // Улучшения
+            const upgradesContainer = document.getElementById('business-upgrades');
+            upgradesContainer.innerHTML = '';
+            
+            business.upgrades.forEach((upgrade, index) => {
+                const upgradeElement = document.createElement('div');
+                upgradeElement.className = `upgrade-item bg-white border ${upgrade.purchased ? 'border-green-200 bg-green-50' : 'border-gray-200'} rounded-lg p-3`;
+                
+                const canBuy = business.quantity >= upgrade.requiredQuantity && !upgrade.purchased;
+                const lockedClass = !canBuy && !upgrade.purchased ? 'opacity-50' : '';
+                
+                upgradeElement.innerHTML = `
+                    <div class="flex justify-between items-start mb-2">
+                        <div class="${lockedClass}">
+                            <h5 class="font-bold ${upgrade.purchased ? 'text-green-700' : 'text-gray-800'}">${upgrade.name}</h5>
+                            <p class="text-sm ${upgrade.purchased ? 'text-green-600' : 'text-gray-600'}">${upgrade.description}</p>
+                            ${!upgrade.purchased && business.quantity < upgrade.requiredQuantity ? 
+                                `<span class="text-xs text-gray-500">Требуется ${upgrade.requiredQuantity} бизнесов</span>` : ''}
+                        </div>
+                        ${upgrade.purchased ? 
+                            '<span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">Куплено</span>' : 
+                            `<button data-upgrade="${index}" class="buy-upgrade-btn ${canBuy ? `bg-${business.color}-500 hover:bg-${business.color}-600` : 'bg-gray-300 cursor-not-allowed'} text-white px-3 py-1 rounded-full text-xs font-medium transition">
+                                ${formatNumber(upgrade.price)} RCC
+                            </button>`}
+                    </div>
+                `;
+                upgradesContainer.appendChild(upgradeElement);
+            });
+            
+            // Добавляем обработчики для кнопок улучшений
+            document.querySelectorAll('.buy-upgrade-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const upgradeIndex = parseInt(this.getAttribute('data-upgrade'));
+                    const business = businesses[businessId];
+                    const upgrade = business.upgrades[upgradeIndex];
+                    
+                    if (business.quantity >= upgrade.requiredQuantity && !upgrade.purchased) {
+                        buyUpgrade(businessId, upgradeIndex);
+                    }
+                });
+            });
+            
+            // Открываем модальное окно
+            document.getElementById('business-details-modal').classList.add('active');
+        }
+
+        // Закрытие модального окна деталей бизнеса
+        function closeBusinessDetailsModal() {
+            document.getElementById('business-details-modal').classList.remove('active');
+            currentBusiness = null;
+            updateUI();
+        }
+
+        // Покупка бизнеса
+        function buyBusiness(businessId) {
+            const business = businesses[businessId];
+            const price = calculateBusinessPrice(businessId);
+            
+            if (coins >= price) {
+                coins -= price;
+                business.quantity += 1;
+                
+                // Создаем новый экземпляр бизнеса с уникальным ID
+                const instanceId = Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+                business.instances.push({
+                    id: instanceId,
+                    name: business.name + ' #' + (business.instances.length + 1),
+                    income: calculateBusinessIncome(businessId)
+                });
+                
+                // Добавляем доход от бизнеса
+                businessIncome += calculateBusinessIncome(businessId);
+                
+                showNotification(`Вы успешно открыли ${business.name}!`);
+                closeBusinessModal();
+                updateUI();
+                saveGame();
+                
+                // Открываем детали бизнеса
+                openBusinessDetailsModal(businessId);
+            } else {
+                showNotification('Недостаточно RCC для покупки этого бизнеса!');
+            }
+        }
+
+        // Покупка еще одного бизнеса
+        function buyAnotherBusiness(businessId) {
+            const business = businesses[businessId];
+            const price = calculateBusinessPrice(businessId);
+            
+            if (coins >= price) {
+                coins -= price;
+                business.quantity += 1;
+                
+                // Создаем новый экземпляр бизнеса с уникальным ID
+                const instanceId = Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+                business.instances.push({
+                    id: instanceId,
+                    name: business.name + ' #' + (business.instances.length + 1),
+                    income: calculateBusinessIncome(businessId)
+                });
+                
+                showNotification(`Вы купили еще один ${business.name}! Теперь у вас ${business.quantity} шт.`);
+                openBusinessDetailsModal(businessId);
+                updateUI();
+                saveGame();
+            } else {
+                showNotification('Недостаточно RCC для покупки этого бизнеса!');
+            }
+        }
+
+        // Престиж бизнеса
+        function prestigeBusiness(businessId) {
+            const business = businesses[businessId];
+            
+            if (business.quantity < 10) {
+                showNotification('Для престижа нужно иметь минимум 10 бизнесов!');
+                return;
+            }
+            
+            if (confirm(`Вы уверены, что хотите сделать престиж ${business.name}? Вы получите бонус к доходу (x${business.prestige + 1}), но количество бизнесов сбросится до 0.`)) {
+                business.prestige++;
+                business.quantity = 0;
+                business.instances = [];
+                
+                // Сбрасываем улучшения
+                business.upgrades.forEach(upgrade => {
+                    upgrade.purchased = false;
+                });
+                
+                showNotification(`Поздравляем! Престиж ${business.name} теперь ${business.prestige}! Доход увеличен в ${business.prestige + 1} раз.`);
+                openBusinessDetailsModal(businessId);
+                updateUI();
+                saveGame();
+            }
+        }
+
+        // Расчет цены бизнеса (учитывает количество и престиж)
+        function calculateBusinessPrice(businessId) {
+            const business = businesses[businessId];
+            const basePrice = business.price;
+            const quantityMultiplier = Math.pow(1.15, business.quantity);
+            const prestigeDiscount = business.prestige * 0.1; // 10% скидка за каждый престиж
+            
+            return Math.floor(basePrice * quantityMultiplier * (1 - prestigeDiscount));
+        }
+
+        // Покупка улучшения для бизнеса
+        function buyUpgrade(businessId, upgradeIndex) {
+            const business = businesses[businessId];
+            const upgrade = business.upgrades[upgradeIndex];
+            
+            if (upgrade.purchased) {
+                showNotification('Вы уже купили это улучшение!');
+                return;
+            }
+            
+            if (coins >= upgrade.price) {
+                coins -= upgrade.price;
+                upgrade.purchased = true;
+                
+                showNotification(`Вы купили улучшение "${upgrade.name}" для ${business.name}!`);
+                openBusinessDetailsModal(businessId); // Обновляем модальное окно
+                updateUI();
+                saveGame();
+            } else {
+                showNotification('Недостаточно RCC для покупки этого улучшения!');
+            }
+        }
+
+        // Расчет дохода бизнеса
+        function calculateBusinessIncome(businessId) {
+            const business = businesses[businessId];
+            if (business.quantity === 0) return 0;
+            
+            let income = business.baseIncome * business.quantity;
+            
+            // Учитываем престиж (каждый престиж дает +100% дохода)
+            const prestigeMultiplier = business.prestige + 1;
+            income *= prestigeMultiplier;
+            
+            // Учитываем улучшения
+            business.upgrades.forEach(upgrade => {
+                if (upgrade.purchased) {
+                    income *= upgrade.multiplier;
+                }
+            });
+            
+            return Math.floor(income);
+        }
+
+        // Обновление интерфейса
+        function updateUI() {
+            // Обновляем количество монет
+            document.getElementById('coins').textContent = formatNumber(Math.floor(coins));
+
+            const shared = JSON.parse(localStorage.getItem('raccoonClickerShared') || '{}');
+    const cps = shared.cps || 0;
+    const cpsMultiplier = shared.cpsMultiplier || 1;
+    const businessIncome = shared.businessIncome || 0;
+    const totalIncome = (cps * cpsMultiplier) + businessIncome;
+    
+    document.getElementById('income').textContent = formatNumber(totalIncome.toFixed(1));
+            
+        
+            
+            // Обновляем список бизнесов игрока
+            const businessList = document.getElementById('business-list');
+            businessList.innerHTML = '';
+            
+            let hasBusinesses = false;
+            
+            for (const businessId in businesses) {
+                const business = businesses[businessId];
+                
+                if (business.quantity > 0) {
+                    hasBusinesses = true;
+                    
+                    // Отображаем каждый экземпляр бизнеса отдельно
+                    business.instances.forEach((instance, index) => {
+                        const businessElement = document.createElement('div');
+                        businessElement.className = `business-instance business-card-container`;
+                        
+                        businessElement.innerHTML = `
+                            <div class="business-card bg-white border border-gray-200 rounded-lg p-4 cursor-pointer" onclick="openBusinessDetailsModal('${businessId}')">
+                                <div class="flex items-start mb-3">
+                                    <div class="business-icon bg-${business.color}-100 text-${business.color}-600 mr-3">
+                                        <i class="fas ${business.icon}"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <h4 class="font-bold text-gray-800">${instance.name}</h4>
+                                        <p class="text-sm text-gray-600">${formatNumber(calculateBusinessIncome(businessId))} RCC/15 сек</p>
+                                    </div>
+                                </div>
+                                <input type="text" class="name-input" value="${instance.name}" 
+                                    onchange="updateBusinessName('${businessId}', '${instance.id}', this.value)"
+                                    onclick="event.stopPropagation()">
+                            </div>
+                            ${business.prestige > 0 ? `<div class="prestige-badge">Престиж ${business.prestige}</div>` : ''}
+                        `;
+                        businessList.appendChild(businessElement);
+                    });
+                }
+            }
+            
+            // Если у игрока нет бизнесов, показываем сообщение
+            if (!hasBusinesses) {
+                businessList.innerHTML = `
+                    <div class="col-span-full text-center py-8">
+                        <i class="fas fa-store-alt text-4xl text-gray-300 mb-3"></i>
+                        <p class="text-gray-500">У вас пока нет бизнесов. Нажмите кнопку "Открыть новый бизнес", чтобы начать!</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Обновление имени бизнеса
+        function updateBusinessName(businessId, instanceId, newName) {
+            const business = businesses[businessId];
+            const instance = business.instances.find(i => i.id === instanceId);
+            if (instance) {
+                instance.name = newName;
+                saveGame();
+            }
+        }
+
+        // Показать уведомление
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            document.getElementById('notification-message').textContent = message;
+            notification.classList.remove('hidden');
+            
+            setTimeout(() => {
+                notification.classList.add('hidden');
+            }, 3000);
+        }
+
+        // Форматирование чисел с разделителями
+        function formatNumber(num) {
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+        }
+
+        // Автоматическое сохранение каждые 30 секунд
+        setInterval(() => {
+            saveGame();
+        }, 30000);
+
+        // Инициализация при загрузке страницы
+        window.onload = function() {
+            initGame();
+        };
+        
+        // Глобальные функции для вызова из HTML
+        window.openBusinessDetailsModal = openBusinessDetailsModal;
+        window.updateBusinessName = updateBusinessName;
+
+
+
+
+        const tabId = Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+
+function tryBecomeLeader() {
+    const now = Date.now();
+    const leader = JSON.parse(localStorage.getItem('incomeLeader') || '{}');
+    if (!leader.timestamp || now - leader.timestamp > 20000) {
+        localStorage.setItem('incomeLeader', JSON.stringify({ tabId, timestamp: now }));
+    }
+}
+tryBecomeLeader();
+setInterval(tryBecomeLeader, 10000);
+
+setInterval(() => {
+    const leader = JSON.parse(localStorage.getItem('incomeLeader') || '{}');
+    if (leader.tabId === tabId) {
+        // тут начисление RCC по общей логике
+    }
+}, 15000);
+
+// Синхронизация UI:
+setInterval(() => {
+    const shared = JSON.parse(localStorage.getItem('raccoonClickerShared') || '{}');
+    // обновление UI тут
+}, 1500);
+
+    </script>
+</body>
+</html>
