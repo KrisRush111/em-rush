@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Raccoon Clicker - Бизнес</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .progress-bar {
+            height: 20px;
+            transition: width 0.3s ease;
+        }
+        .business-item {
+            transition: all 0.2s ease;
+        }
+        .business-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        .modal {
+            transition: all 0.3s ease;
+            opacity: 0;
+            visibility: hidden;
+        }
+        .modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .business-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+        .business-card:hover {
+            box-shadow: 0 14px 28px rgba(0, 0, 0, 0.1), 0 10px 10px rgba(0, 0, 0, 0.05);
+            transform: translateY(-5px);
+        }
+        .currency-icon {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="%23f59e0b" d="M12,2C6.48,2,2,6.48,2,12s4.48,10,10,10s10-4.48,10-10S17.52,2,12,2z M12,20c-4.41,0-8-3.59-8-8s3.59-8,8-8 s8,3.59,8,8S16.41,20,12,20z M12,6c-3.31,0-6,2.69-6,6s2.69,6,6,6s6-2.69,6-6S15.31,6,12,6z M12,16c-2.21,0-4-1.79-4-4 s1.79-4,4-4s4,1.79,4,4S14.21,16,12,16z"/><path fill="%23f59e0b" d="M12,10c-1.1,0-2,0.9-2,2s0.9,2,2,2s2-0.9,2-2S13.1,10,12,10z"/></svg>');
+            background-size: contain;
+            margin-right: 4px;
+        }
+        .level-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            z-index: 10;
+        }
+        .nav-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            z-index: 100;
+            backdrop-filter: blur(10px);
+            background-color: rgba(255, 255, 255, 0.8);
+        }
+        .nav-item {
+            transition: all 0.2s ease;
+        }
+        .nav-item:hover {
+            transform: translateY(-5px);
+        }
+        .nav-item.active {
+            color: #3B82F6;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .notification {
+            animation: fadeIn 0.3s ease-out;
+        }
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+        .game-container {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            backdrop-filter: blur(10px);
+        }
+        .progress-container {
+            background: rgba(229, 231, 235, 0.5);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            background: linear-gradient(90deg, #3B82F6, #60A5FA);
+            height: 100%;
+            transition: width 0.5s ease;
+        }
+        .counter {
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 12px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            backdrop-filter: blur(5px);
+        }
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .animate-slide-in {
+            animation: slideIn 0.5s ease-out forwards;
+        }
+        .delay-100 {
+            animation-delay: 0.1s;
+        }
+        .delay-200 {
+            animation-delay: 0.2s;
+        }
+        .delay-300 {
+            animation-delay: 0.3s;
+        }
+        @keyframes pulse-glow {
+            0% {
+                box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+            }
+        }
+        .pulse-button {
+            animation: pulse-glow 2s infinite;
+        }
+        /* Защита от копирования */
+        body {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            touch-action: manipulation;
+        }
+        body {
+            pointer-events: auto;
+        }
+        img {
+            -webkit-user-drag: none;
+            -khtml-user-drag: none;
+            -moz-user-drag: none;
+            -o-user-drag: none;
+            user-drag: none;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen flex flex-col" oncontextmenu="return false;">
+    <!-- Основной контейнер игры -->
+    <div id="game-container" class="container mx-auto px-4 py-8 flex-grow mb-16">
+        <div class="flex flex-col">
+            <!-- Основная игровая область -->
+            <div class="flex-1">
+                <div class="game-container bg-white/90 rounded-xl p-6 shadow-lg relative">
+                    <!-- Бейдж уровня -->
+                    <div id="level-badge" class="level-badge animate-slide-in">
+                        Уровень <span id="current-level">1</span>
+                    </div>
+                    
+                    <div class="flex justify-between items-center mb-6">
+                        <div class="counter bg-blue-100/80 text-blue-800 px-4 py-2 rounded-full font-semibold">
+                            <span class="currency-icon"></span>
+                            <span id="coins">0</span> RCC
+                        </div>
+                        <div class="counter bg-green-100/80 text-green-800 px-4 py-2 rounded-full font-semibold">
+                            <i class="fas fa-bolt mr-2"></i>
+                            <span id="cps">0</span> RCC/15 сек
+                        </div>
+                    </div>
+
+                    <div class="mb-6">
+                        <div class="flex justify-between mb-2">
+                            <span class="text-sm font-medium text-gray-700">Прогресс до следующего уровня</span>
+                            <span class="text-sm font-medium text-gray-700"><span id="current-progress">0</span>/<span id="target">10000</span> RCC</span>
+                        </div>
+                        <div class="progress-container w-full bg-gray-200/50 rounded-full h-3">
+                            <div id="progress-bar" class="progress-fill rounded-full h-3" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Кнопка открытия бизнеса -->
+                    <div class="flex justify-center mb-6">
+                        <button id="open-business-btn" class="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-full font-medium transition pulse-button">
+                            <i class="fas fa-store mr-2"></i> Открыть бизнес
+                        </button>
+                    </div>
+
+                    <!-- Список купленных бизнесов -->
+                    <div class="mb-6">
+                        <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                            <i class="fas fa-building mr-2 text-blue-500"></i> Ваши заведения
+                        </h2>
+                        
+                        <div id="owned-businesses" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Бизнесы будут добавляться сюда динамически -->
+                        </div>
+                    </div>
+
+                    <!-- Улучшения бизнеса -->
+                    <div class="mb-6">
+                        <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                            <i class="fas fa-chart-line mr-2 text-purple-500"></i> Улучшения бизнеса
+                        </h2>
+                        
+                        <div class="grid grid-cols-1 gap-4">
+                            <!-- Улучшение 1 -->
+                            <div class="business-card business-item bg-white p-4 rounded-lg border border-gray-200 animate-slide-in delay-100">
+                                <div class="flex items-start">
+                                    <div class="flex-shrink-0 bg-blue-100 p-3 rounded-lg">
+                                        <i class="fas fa-users text-blue-600 text-xl"></i>
+                                    </div>
+                                    <div class="ml-4 flex-1">
+                                        <h3 class="text-sm font-medium text-gray-800">Маркетинг</h3>
+                                        <p class="mt-1 text-xs text-gray-500">Увеличивает доход всех бизнесов на 20%</p>
+                                        <div class="mt-3 flex justify-between items-center">
+                                            <span class="text-sm font-semibold text-blue-600">×1 → ×1.2</span>
+                                            <button onclick="buyBusinessUpgrade('marketing')" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-medium transition">
+                                                <span id="marketing-price">5000</span> RCC
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Улучшение 2 -->
+                            <div class="business-card business-item bg-white p-4 rounded-lg border border-gray-200 animate-slide-in delay-200">
+                                <div class="flex items-start">
+                                    <div class="flex-shrink-0 bg-purple-100 p-3 rounded-lg">
+                                        <i class="fas fa-cogs text-purple-600 text-xl"></i>
+                                    </div>
+                                    <div class="ml-4 flex-1">
+                                        <h3 class="text-sm font-medium text-gray-800">Оптимизация</h3>
+                                        <p class="mt-1 text-xs text-gray-500">Увеличивает доход всех бизнесов на 50%</p>
+                                        <div class="mt-3 flex justify-between items-center">
+                                            <span class="text-sm font-semibold text-purple-600">×1 → ×1.5</span>
+                                            <button onclick="buyBusinessUpgrade('optimization')" class="bg-purple-500 hover:bg-purple-600 text-white px-3 py-1 rounded-full text-xs font-medium transition">
+                                                <span id="optimization-price">15000</span> RCC
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Улучшение 3 -->
+                            <div class="business-card business-item bg-white p-4 rounded-lg border border-gray-200 animate-slide-in delay-300">
+                                <div class="flex items-start">
+                                    <div class="flex-shrink-0 bg-green-100 p-3 rounded-lg">
+                                        <i class="fas fa-globe text-green-600 text-xl"></i>
+                                    </div>
+                                    <div class="ml-4 flex-1">
+                                        <h3 class="text-sm font-medium text-gray-800">Франшиза</h3>
+                                        <p class="mt-1 text-xs text-gray-500">Увеличивает доход всех бизнесов на 100%</p>
+                                        <div class="mt-3 flex justify-between items-center">
+                                            <span class="text-sm font-semibold text-green-600">×1 → ×2</span>
+                                            <button onclick="buyBusinessUpgrade('franchise')" class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-full text-xs font-medium transition">
+                                                <span id="franchise-price">30000</span> RCC
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно для покупки бизнеса -->
+    <div id="business-modal" class="modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-xl p-6 w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-gray-800">Купить бизнес</h3>
+                <button id="close-modal-btn" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div id="business-offers" class="grid grid-cols-1 gap-4">
+                <!-- Бизнес 1 -->
+                <div class="business-card business-item bg-white p-4 rounded-lg border border-gray-200">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 bg-yellow-100 p-3 rounded-lg">
+                            <i class="fas fa-coffee text-yellow-600 text-xl"></i>
+                        </div>
+                        <div class="ml-4 flex-1">
+                            <h3 class="text-sm font-medium text-gray-800">Кофейня</h3>
+                            <p class="mt-1 text-xs text-gray-500">Доход: 5 RCC/15 сек</p>
+                            <div class="mt-3 flex justify-between items-center">
+                                <span class="text-sm font-semibold text-yellow-600">0 → 1</span>
+                                <button onclick="buyBusiness('coffee')" class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded-full text-xs font-medium transition">
+                                    1000 RCC
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Бизнес 2 -->
+                <div class="business-card business-item bg-white p-4 rounded-lg border border-gray-200">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 bg-blue-100 p-3 rounded-lg">
+                            <i class="fas fa-film text-blue-600 text-xl"></i>
+                        </div>
+                        <div class="ml-4 flex-1">
+                            <h3 class="text-sm font-medium text-gray-800">Кинотеатр</h3>
+                            <p class="mt-1 text-xs text-gray-500">Доход: 15 RCC/15 сек</p>
+                            <div class="mt-3 flex justify-between items-center">
+                                <span class="text-sm font-semibold text-blue-600">0 → 1</span>
+                                <button onclick="buyBusiness('cinema')" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-medium transition">
+                                    3000 RCC
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Бизнес 3 -->
+                <div class="business-card business-item bg-white p-4 rounded-lg border border-gray-200">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 bg-green-100 p-3 rounded-lg">
+                            <i class="fas fa-book text-green-600 text-xl"></i>
+                        </div>
+                        <div class="ml-4 flex-1">
+                            <h3 class="text-sm font-medium text-gray-800">Библиотека</h3>
+                            <p class="mt-1 text-xs text-gray-500">Доход: 25 RCC/15 сек</p>
+                            <div class="mt-3 flex justify-between items-center">
+                                <span class="text-sm font-semibold text-green-600">0 → 1</span>
+                                <button onclick="buyBusiness('library')" class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-full text-xs font-medium transition">
+                                    5000 RCC
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Бизнес 4 -->
+                <div class="business-card business-item bg-white p-4 rounded-lg border border-gray-200">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 bg-purple-100 p-3 rounded-lg">
+                            <i class="fas fa-theater-masks text-purple-600 text-xl"></i>
+                        </div>
+                        <div class="ml-4 flex-1">
+                            <h3 class="text-sm font-medium text-gray-800">Театр</h3>
+                            <p class="mt-1 text-xs text-gray-500">Доход: 50 RCC/15 сек</p>
+                            <div class="mt-3 flex justify-between items-center">
+                                <span class="text-sm font-semibold text-purple-600">0 → 1</span>
+                                <button onclick="buyBusiness('theater')" class="bg-purple-500 hover:bg-purple-600 text-white px-3 py-1 rounded-full text-xs font-medium transition">
+                                    10000 RCC
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Бизнес 5 -->
+                <div class="business-card business-item bg-white p-4 rounded-lg border border-gray-200">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 bg-red-100 p-3 rounded-lg">
+                            <i class="fas fa-landmark text-red-600 text-xl"></i>
+                        </div>
+                        <div class="ml-4 flex-1">
+                            <h3 class="text-sm font-medium text-gray-800">Музей</h3>
+                            <p class="mt-1 text-xs text-gray-500">Доход: 100 RCC/15 сек</p>
+                            <div class="mt-3 flex justify-between items-center">
+                                <span class="text-sm font-semibold text-red-600">0 → 1</span>
+                                <button onclick="buyBusiness('museum')" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-full text-xs font-medium transition">
+                                    20000 RCC
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Футер с навигацией -->
+    <footer class="nav-footer">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex justify-around">
+                <!-- Меню -->
+                <a href="menu.html" class="nav-item flex flex-col items-center text-gray-600 hover:text-blue-500">
+                    <i class="fas fa-bars text-2xl mb-1"></i>
+                    <span class="text-xs">Меню</span>
+                </a>
+                
+                <!-- Бизнес -->
+                <a href="business.html" class="nav-item flex flex-col items-center text-green-500">
+                    <i class="fas fa-business-time text-2xl mb-1"></i>
+                    <span class="text-xs">Бизнес</span>
+                </a>
+                
+                <!-- Достижения -->
+                <a href="achievements.html" class="nav-item flex flex-col items-center text-gray-600 hover:text-yellow-500">
+                    <i class="fas fa-trophy text-2xl mb-1"></i>
+                    <span class="text-xs">Достижения</span>
+                </a>
+                
+                <!-- Настройки -->
+                <a href="settings.html" class="nav-item flex flex-col items-center text-gray-600 hover:text-purple-500">
+                    <i class="fas fa-cog text-2xl mb-1"></i>
+                    <span class="text-xs">Настройки</span>
+                </a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Глобальные переменные бизнеса
+        let coins = 0;
+        let cps = 0;
+        let currentTarget = 10000;
+        let currentLevel = 1;
+        let businessMultiplier = 1;
+        const tabId = Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+        let lastUpdateTime = Date.now();
+        let isLeader = false;
+        
+        // Цели для уровней (только 6 уровней)
+        const levelTargets = [
+            10000,    // Уровень 1
+            100000,   // Уровень 2
+            500000,   // Уровень 3
+            10000000,  // Уровень 4
+            50000000,  // Уровень 5
+            1000000000  // Уровень 6 (последний)
+        ];
+        
+        // Бизнесы
+        const businesses = {
+            coffee: {
+                name: "Кофейня",
+                icon: "fa-coffee",
+                color: "yellow",
+                baseIncome: 5,
+                price: 1000,
+                owned: 0
+            },
+            cinema: {
+                name: "Кинотеатр",
+                icon: "fa-film",
+                color: "blue",
+                baseIncome: 15,
+                price: 3000,
+                owned: 0
+            },
+            library: {
+                name: "Библиотека",
+                icon: "fa-book",
+                color: "green",
+                baseIncome: 25,
+                price: 5000,
+                owned: 0
+            },
+            theater: {
+                name: "Театр",
+                icon: "fa-theater-masks",
+                color: "purple",
+                baseIncome: 50,
+                price: 10000,
+                owned: 0
+            },
+            museum: {
+                name: "Музей",
+                icon: "fa-landmark",
+                color: "red",
+                baseIncome: 100,
+                price: 20000,
+                owned: 0
+            }
+        };
+        
+        // Улучшения бизнеса
+        const businessUpgrades = {
+            marketing: {
+                name: "Маркетинг",
+                description: "Увеличивает доход всех бизнесов на 20%",
+                multiplier: 1.2,
+                price: 5000,
+                purchased: false
+            },
+            optimization: {
+                name: "Оптимизация",
+                description: "Увеличивает доход всех бизнесов на 50%",
+                multiplier: 1.5,
+                price: 15000,
+                purchased: false
+            },
+            franchise: {
+                name: "Франшиза",
+                description: "Увеличивает доход всех бизнесов на 100%",
+                multiplier: 2,
+                price: 30000,
+                purchased: false
+            }
+        };
+        
+        // Инициализация игры
+        function initGame() {
+            loadGame();
+            updateUI();
+            
+            // Обработчики модального окна
+            document.getElementById('open-business-btn').addEventListener('click', openBusinessModal);
+            document.getElementById('close-modal-btn').addEventListener('click', closeBusinessModal);
+            
+            // Инициализация синхронизации
+            initSync();
+            
+            // Обновляем UI каждую секунду
+            setInterval(updateUI, 1000);
+            
+            // Проверка изменений в localStorage каждые 500мс
+            setInterval(checkForUpdates, 500);
+            
+            // Обработчик видимости страницы
+            document.addEventListener('visibilitychange', handleVisibilityChange);
+        }
+        
+        // Инициализация синхронизации между вкладками
+        function initSync() {
+            // Проверяем, есть ли лидер
+            checkLeaderStatus();
+            
+            // Периодически проверяем, можем ли стать лидером
+            setInterval(checkLeaderStatus, 5000);
+        }
+        
+        // Проверка статуса лидера
+        function checkLeaderStatus() {
+            const now = Date.now();
+            const leader = JSON.parse(localStorage.getItem('incomeLeader') || '{}');
+            
+            // Если нет лидера или лидер неактивен более 10 секунд
+            if (!leader.timestamp || now - leader.timestamp > 10000) {
+                // Становимся лидером
+                localStorage.setItem('incomeLeader', JSON.stringify({ 
+                    tabId, 
+                    timestamp: now 
+                }));
+                isLeader = true;
+            } else if (leader.tabId === tabId) {
+                // Обновляем timestamp если мы лидер
+                localStorage.setItem('incomeLeader', JSON.stringify({ 
+                    tabId, 
+                    timestamp: now 
+                }));
+                isLeader = true;
+            } else {
+                isLeader = false;
+            }
+        }
+        
+        // Обработчик изменения видимости страницы
+        function handleVisibilityChange() {
+            if (document.visibilityState === 'visible') {
+                // Страница снова видима - проверяем обновления
+                checkForUpdates();
+            }
+        }
+        
+        // Проверка обновлений в localStorage
+        function checkForUpdates() {
+            const sharedData = JSON.parse(localStorage.getItem('raccoonClickerShared') || '{}');
+            
+            // Если данные обновились после нашего последнего обновления
+            if (sharedData.timestamp > lastUpdateTime) {
+                // Обновляем наши данные
+                coins = sharedData.coins || coins;
+                currentLevel = sharedData.currentLevel || currentLevel;
+                currentTarget = sharedData.currentTarget || currentTarget;
+                businessMultiplier = sharedData.businessMultiplier || businessMultiplier;
+                
+                // Обновляем бизнесы
+                if (sharedData.businesses) {
+                    for (const [type, business] of Object.entries(sharedData.businesses)) {
+                        if (businesses[type]) {
+                            businesses[type].owned = business.owned || 0;
+                            businesses[type].price = business.price || businesses[type].price;
+                        }
+                    }
+                }
+                
+                // Обновляем улучшения
+                if (sharedData.businessUpgrades) {
+                    for (const [type, upgrade] of Object.entries(sharedData.businessUpgrades)) {
+                        if (businessUpgrades[type]) {
+                            businessUpgrades[type].purchased = upgrade.purchased || false;
+                        }
+                    }
+                }
+                
+                lastUpdateTime = sharedData.timestamp;
+                updateUI();
+            }
+        }
+        
+        // Обновление общих данных
+        function updateSharedData() {
+            const sharedData = {
+                coins,
+                currentLevel,
+                currentTarget,
+                businessMultiplier,
+                businesses: {},
+                businessUpgrades: {},
+                timestamp: Date.now()
+            };
+            
+            // Сохраняем данные бизнесов
+            for (const [type, business] of Object.entries(businesses)) {
+                sharedData.businesses[type] = {
+                    owned: business.owned,
+                    price: business.price
+                };
+            }
+            
+            // Сохраняем данные улучшений
+            for (const [type, upgrade] of Object.entries(businessUpgrades)) {
+                sharedData.businessUpgrades[type] = {
+                    purchased: upgrade.purchased
+                };
+            }
+            
+            localStorage.setItem('raccoonClickerShared', JSON.stringify(sharedData));
+            lastUpdateTime = sharedData.timestamp;
+        }
+        
+        // Открытие модального окна бизнеса
+        function openBusinessModal() {
+            document.getElementById('business-modal').classList.add('active');
+        }
+        
+        // Закрытие модального окна бизнеса
+        function closeBusinessModal() {
+            document.getElementById('business-modal').classList.remove('active');
+        }
+        
+        // Покупка бизнеса
+        function buyBusiness(type) {
+            const business = businesses[type];
+            
+            if (coins >= business.price) {
+                coins -= business.price;
+                business.owned += 1;
+                business.price = Math.floor(business.price * 1.5); // Увеличиваем цену для следующей покупки
+                
+                updateUI();
+                saveGame();
+                updateOwnedBusinesses();
+                updateSharedData();
+                
+                // Анимация успешной покупки
+                const button = document.querySelector(`button[onclick="buyBusiness('${type}')"]`);
+                button.classList.add('bg-green-500');
+                setTimeout(() => {
+                    button.classList.remove('bg-green-500');
+                }, 300);
+            } else {
+                showNotification('Не хватает RCC!');
+                
+                // Анимация ошибки
+                const button = document.querySelector(`button[onclick="buyBusiness('${type}')"]`);
+                button.classList.add('bg-red-500');
+                setTimeout(() => {
+                    button.classList.remove('bg-red-500');
+                }, 300);
+            }
+        }
+        
+        // Покупка улучшения бизнеса
+        function buyBusinessUpgrade(type) {
+            const upgrade = businessUpgrades[type];
+            
+            if (coins >= upgrade.price && !upgrade.purchased) {
+                coins -= upgrade.price;
+                upgrade.purchased = true;
+                businessMultiplier *= upgrade.multiplier;
+                
+                updateUI();
+                saveGame();
+                updateSharedData();
+                
+                // Анимация успешной покупки
+                const button = document.querySelector(`button[onclick="buyBusinessUpgrade('${type}')"]`);
+                button.classList.add('bg-green-500');
+                setTimeout(() => {
+                    button.classList.remove('bg-green-500');
+                }, 300);
+                
+                // Обновляем кнопку улучшения
+                button.disabled = true;
+                button.textContent = "Куплено";
+                button.classList.remove('hover:bg-purple-600');
+                button.classList.add('bg-gray-300');
+            } else if (upgrade.purchased) {
+                showNotification('Улучшение уже куплено!');
+            } else {
+                showNotification('Не хватает RCC!');
+                
+                // Анимация ошибки
+                const button = document.querySelector(`button[onclick="buyBusinessUpgrade('${type}')"]`);
+                button.classList.add('bg-red-500');
+                setTimeout(() => {
+                    button.classList.remove('bg-red-500');
+                }, 300);
+            }
+        }
+        
+        // Обновление списка купленных бизнесов
+        function updateOwnedBusinesses() {
+            const container = document.getElementById('owned-businesses');
+            container.innerHTML = '';
+            
+            let hasBusinesses = false;
+            
+            for (const [type, business] of Object.entries(businesses)) {
+                if (business.owned > 0) {
+                    hasBusinesses = true;
+                    
+                    const income = business.baseIncome * business.owned * businessMultiplier;
+                    
+                    const businessElement = document.createElement('div');
+                    businessElement.className = `business-card business-item bg-white p-4 rounded-lg border border-gray-200`;
+                    businessElement.innerHTML = `
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0 bg-${business.color}-100 p-3 rounded-lg">
+                                <i class="fas ${business.icon} text-${business.color}-600 text-xl"></i>
+                            </div>
+                            <div class="ml-4 flex-1">
+                                <h3 class="text-sm font-medium text-gray-800">${business.name}</h3>
+                                <p class="mt-1 text-xs text-gray-500">Доход: ${formatNumber(income.toFixed(1))} RCC/15 сек</p>
+                                <div class="mt-3 flex justify-between items-center">
+                                    <span class="text-sm font-semibold text-${business.color}-600">${business.owned} шт.</span>
+                                    <button onclick="upgradeBusiness('${type}')" class="bg-${business.color}-500 hover:bg-${business.color}-600 text-white px-3 py-1 rounded-full text-xs font-medium transition">
+                                        +1 за ${formatNumber(business.price)} RCC
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    container.appendChild(businessElement);
+                }
+            }
+            
+            if (!hasBusinesses) {
+                container.innerHTML = `
+                    <div class="col-span-2 text-center py-8 text-gray-500">
+                        <i class="fas fa-store-alt text-4xl mb-2"></i>
+                        <p>У вас пока нет бизнесов. Нажмите "Открыть бизнес" чтобы начать!</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // Улучшение бизнеса (покупка дополнительной единицы)
+        function upgradeBusiness(type) {
+            const business = businesses[type];
+            
+            if (coins >= business.price) {
+                coins -= business.price;
+                business.owned += 1;
+                business.price = Math.floor(business.price * 1.5); // Увеличиваем цену для следующей покупки
+                
+                updateUI();
+                saveGame();
+                updateOwnedBusinesses();
+                updateSharedData();
+                
+                showNotification(`+1 ${business.name} куплено!`);
+            } else {
+                showNotification('Не хватает RCC!');
+            }
+        }
+        
+        // Расчет общего дохода от бизнесов
+        function calculateBusinessIncome() {
+            let totalIncome = 0;
+            
+            for (const business of Object.values(businesses)) {
+                totalIncome += business.baseIncome * business.owned;
+            }
+            
+            return totalIncome * businessMultiplier;
+        }
+        
+        // Обновление интерфейса
+        function updateUI() {
+            // Рассчитываем доход от бизнесов
+            const businessIncome = calculateBusinessIncome();
+            
+            // Получаем доход от кликов из menu.html
+            const sharedData = JSON.parse(localStorage.getItem('raccoonClickerShared') || '{}');
+            const clickIncome = sharedData.clickIncome || 0;
+            
+            // Общий доход (клики + бизнес)
+            const totalIncome = clickIncome + businessIncome;
+            
+            // Основные показатели
+            document.getElementById('coins').textContent = formatNumber(Math.floor(coins));
+            document.getElementById('cps').textContent = formatNumber(totalIncome.toFixed(1));
+            
+            // Прогресс бар
+            let progressPercent;
+            if (currentLevel <= 6) {
+                progressPercent = Math.min((coins / currentTarget) * 100, 100);
+                document.getElementById('current-progress').textContent = formatNumber(Math.floor(coins));
+                document.getElementById('target').textContent = formatNumber(currentTarget);
+            } else {
+                // После 6 уровня показываем только текущее количество RCC
+                progressPercent = 100;
+                document.getElementById('current-progress').textContent = formatNumber(Math.floor(coins));
+                document.getElementById('target').textContent = "∞";
+            }
+            
+            document.getElementById('progress-bar').style.width = `${progressPercent}%`;
+            
+            // Обновляем бейдж уровня
+            document.getElementById('current-level').textContent = currentLevel;
+            
+            // Обновляем список купленных бизнесов
+            updateOwnedBusinesses();
+            
+            // Обновляем цены улучшений
+            document.getElementById('marketing-price').textContent = formatNumber(businessUpgrades.marketing.price);
+            document.getElementById('optimization-price').textContent = formatNumber(businessUpgrades.optimization.price);
+            document.getElementById('franchise-price').textContent = formatNumber(businessUpgrades.franchise.price);
+            
+            // Отключаем купленные улучшения
+            if (businessUpgrades.marketing.purchased) {
+                const btn = document.querySelector('button[onclick="buyBusinessUpgrade(\'marketing\')"]');
+                btn.disabled = true;
+                btn.textContent = "Куплено";
+                btn.classList.remove('hover:bg-blue-600');
+                btn.classList.add('bg-gray-300');
+            }
+            
+            if (businessUpgrades.optimization.purchased) {
+                const btn = document.querySelector('button[onclick="buyBusinessUpgrade(\'optimization\')"]');
+                btn.disabled = true;
+                btn.textContent = "Куплено";
+                btn.classList.remove('hover:bg-purple-600');
+                btn.classList.add('bg-gray-300');
+            }
+            
+            if (businessUpgrades.franchise.purchased) {
+                const btn = document.querySelector('button[onclick="buyBusinessUpgrade(\'franchise\')"]');
+                btn.disabled = true;
+                btn.textContent = "Куплено";
+                btn.classList.remove('hover:bg-green-600');
+                btn.classList.add('bg-gray-300');
+            }
+        }
+        
+        // Сохранение игры
+        function saveGame() {
+            try {
+                const gameData = {
+                    coins,
+                    currentTarget,
+                    currentLevel,
+                    businesses,
+                    businessUpgrades,
+                    businessMultiplier,
+                    lastSaveTime: Date.now()
+                };
+                
+                // Сохраняем данные игры
+                localStorage.setItem('raccoonClickerShared', JSON.stringify(gameData));
+                
+                // Обновляем общие данные
+                updateSharedData();
+            } catch (e) {
+                console.warn("Ошибка сохранения:", e);
+            }
+        }
+        
+        // Загрузка игры
+        function loadGame() {
+            // Загружаем данные игры
+            const savedData = localStorage.getItem('raccoonClickerShared');
+            if (savedData) {
+                const gameData = JSON.parse(savedData);
+                
+                coins = gameData.coins || 0;
+                currentTarget = gameData.currentTarget || levelTargets[0];
+                currentLevel = gameData.currentLevel || 1;
+                businessMultiplier = gameData.businessMultiplier || 1;
+                
+                // Восстанавливаем бизнесы
+                if (gameData.businesses) {
+                    for (const [type, business] of Object.entries(gameData.businesses)) {
+                        if (businesses[type]) {
+                            businesses[type].owned = business.owned || 0;
+                            businesses[type].price = business.price || businesses[type].price;
+                        }
+                    }
+                }
+                
+                // Восстанавливаем улучшения бизнеса
+                if (gameData.businessUpgrades) {
+                    for (const [type, upgrade] of Object.entries(gameData.businessUpgrades)) {
+                        if (businessUpgrades[type]) {
+                            businessUpgrades[type].purchased = upgrade.purchased || false;
+                        }
+                    }
+                }
+            }
+            
+            // Обновляем общие данные
+            updateSharedData();
+        }
+        
+        // Показать уведомление
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.className = 'fixed top-4 left-1/2 transform -translate-x-1/2 bg-blue-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 notification';
+            notification.innerHTML = `
+                <div class="flex items-center">
+                    <i class="fas fa-info-circle mr-2"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 2000);
+        }
+        
+        // Форматирование чисел с разделителями
+        function formatNumber(num) {
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+        }
+        
+        // Автоматическое сохранение каждые 30 секунд
+        setInterval(() => {
+            saveGame();
+        }, 30000);
+        
+        // Инициализация при загрузке страницы
+        window.onload = function() {
+            initGame();
+        };
+        
+        // Сохраняем игру при закрытии вкладки
+        window.addEventListener('beforeunload', function(e) {
+            saveGame();
+        });
+    </script>
+</body>
+</html>
