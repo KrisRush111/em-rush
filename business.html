@@ -1,0 +1,1373 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Raccoon Clicker - Бизнес</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .progress-bar {
+            height: 20px;
+            transition: width 0.3s ease;
+        }
+        .business-item {
+            transition: all 0.2s ease;
+        }
+        .business-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        .click-effect {
+            position: absolute;
+            pointer-events: none;
+            animation: float-up 1s forwards;
+            opacity: 0.8;
+        }
+        @keyframes float-up {
+            0% {
+                transform: translateY(0);
+                opacity: 0.8;
+            }
+            100% {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+        }
+        .business-img {
+            transition: all 0.3s ease;
+            max-width: 100%;
+            max-height: 20vh;
+            object-fit: contain;
+            filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.2));
+        }
+        .currency-icon {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="%23f59e0b" d="M12,2C6.48,2,2,6.48,2,12s4.48,10,10,10s10-4.48,10-10S17.52,2,12,2z M12,20c-4.41,0-8-3.59-8-8s3.59-8,8-8 s8,3.59,8,8S16.41,20,12,20z M12,6c-3.31,0-6,2.69-6,6s2.69,6,6,6s6-2.69,6-6S15.31,6,12,6z M12,16c-2.21,0-4-1.79-4-4 s1.79-4,4-4s4,1.79,4,4S14.21,16,12,16z"/><path fill="%23f59e0b" d="M12,10c-1.1,0-2,0.9-2,2s0.9,2,2,2s2-0.9,2-2S13.1,10,12,10z"/></svg>');
+            background-size: contain;
+            margin-right: 4px;
+        }
+        
+        /* Анимация для кнопок */
+        @keyframes pulse-glow {
+            0% {
+                box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+            }
+        }
+        
+        .pulse-button {
+            animation: pulse-glow 2s infinite;
+        }
+        
+        /* Стили для карточек бизнеса */
+        .business-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+        
+        .business-card:hover {
+            box-shadow: 0 14px 28px rgba(0, 0, 0, 0.1), 0 10px 10px rgba(0, 0, 0, 0.05);
+            transform: translateY(-5px);
+        }
+        
+        /* Анимация для появления элементов */
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .animate-slide-in {
+            animation: slideIn 0.5s ease-out forwards;
+        }
+        
+        /* Задержки для анимации */
+        .delay-100 {
+            animation-delay: 0.1s;
+        }
+        
+        .delay-200 {
+            animation-delay: 0.2s;
+        }
+        
+        .delay-300 {
+            animation-delay: 0.3s;
+        }
+        
+        /* Стили для главного контейнера */
+        .game-container {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            backdrop-filter: blur(10px);
+        }
+        
+        /* Стили для модального окна */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+        }
+        
+        .modal-overlay.active .modal-content {
+            transform: translateY(0);
+        }
+        
+        /* Стили для улучшений бизнеса */
+        .upgrade-item {
+            border-left: 4px solid transparent;
+            transition: all 0.3s ease;
+        }
+        
+        .upgrade-item:hover {
+            border-left-color: #3B82F6;
+            background: rgba(59, 130, 246, 0.05);
+        }
+        
+        /* Стили для прогресс бара бизнеса */
+        .business-progress {
+            height: 8px;
+            border-radius: 4px;
+            background: rgba(229, 231, 235, 0.5);
+        }
+        
+        .business-progress-fill {
+            height: 100%;
+            border-radius: 4px;
+            background: linear-gradient(90deg, #10B981, #34D399);
+            transition: width 0.5s ease;
+        }
+        
+        /* Футер с навигацией */
+        .nav-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            z-index: 100;
+            backdrop-filter: blur(10px);
+            background-color: rgba(255, 255, 255, 0.8);
+        }
+        
+        .nav-item {
+            transition: all 0.2s ease;
+        }
+        
+        .nav-item:hover {
+            transform: translateY(-5px);
+        }
+        
+        .nav-item.active {
+            color: #3B82F6;
+        }
+        
+        /* Анимация для уведомлений */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .notification {
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        /* Стили для уровня */
+        .level-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            z-index: 10;
+        }
+        
+        /* Градиентный фон */
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+        
+        /* Стили для вкладок бизнесов */
+        .business-tab {
+            transition: all 0.2s ease;
+            border-bottom: 3px solid transparent;
+        }
+        
+        .business-tab:hover {
+            border-bottom-color: rgba(59, 130, 246, 0.3);
+        }
+        
+        .business-tab.active {
+            border-bottom-color: #3B82F6;
+            color: #3B82F6;
+            font-weight: 600;
+        }
+        
+        /* Стили для особых бизнесов */
+        .special-business {
+            position: relative;
+            border: 2px solid transparent;
+            background-clip: padding-box;
+        }
+        
+        .special-business::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            z-index: -1;
+            border-radius: inherit;
+            background: linear-gradient(45deg, #f59e0b, #ef4444, #8b5cf6);
+            animation: border-glow 3s linear infinite;
+            background-size: 200% 200%;
+        }
+        
+        @keyframes border-glow {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+        
+        /* Стили для глобальных улучшений */
+        .global-upgrade {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border: 1px solid #bae6fd;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .global-upgrade:hover {
+            background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+            transform: translateY(-3px);
+        }
+        
+        .global-upgrade::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .global-upgrade:hover::after {
+            opacity: 1;
+        }
+        
+        .upgrade-icon {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #3B82F6;
+        }
+        
+        /* Анимация для иконок улучшений */
+        @keyframes pulse-icon {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        .pulse-icon {
+            animation: pulse-icon 2s infinite;
+        }
+        
+        /* Стили для бейджа особого бизнеса */
+        .special-badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: linear-gradient(45deg, #f59e0b, #ef4444);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: bold;
+            z-index: 10;
+        }
+        
+        /* Стили для иконок бизнесов */
+        .business-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+            color: #3B82F6;
+        }
+        
+        .special-business-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+            background: linear-gradient(45deg, #f59e0b, #ef4444, #8b5cf6);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen flex flex-col" oncontextmenu="return false;">
+    <!-- Модальное окно покупки бизнеса -->
+    <div id="business-modal" class="modal-overlay">
+        <div class="modal-content w-full max-w-4xl">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-800">Открыть новый бизнес</h2>
+                <button id="close-modal" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <!-- Вкладки бизнесов -->
+            <div class="flex border-b border-gray-200 mb-6">
+                <button id="regular-tab" class="business-tab active px-4 py-2 mr-2">Обычные бизнесы</button>
+                <button id="special-tab" class="business-tab px-4 py-2">Особые бизнесы</button>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="business-options">
+                <!-- Варианты бизнеса будут добавляться сюда динамически -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- Основной контейнер игры -->
+    <div id="game-container" class="container mx-auto px-4 py-8 flex-grow mb-16">
+        <div class="flex flex-col">
+            <!-- Основная игровая область -->
+            <div class="flex-1">
+                <div class="game-container bg-white/90 rounded-xl p-6 shadow-lg relative">
+                    <!-- Бейдж уровня -->
+                    <div id="level-badge" class="level-badge animate-slide-in">
+                        Уровень <span id="current-level">1</span>
+                    </div>
+                    
+                    <div class="flex justify-between items-center mb-6">
+                        <div class="counter bg-blue-100/80 text-blue-800 px-4 py-2 rounded-full font-semibold">
+                            <span class="currency-icon"></span>
+                            <span id="coins">0</span> RCC
+                        </div>
+                        <div class="counter bg-green-100/80 text-green-800 px-4 py-2 rounded-full font-semibold">
+                            <i class="fas fa-bolt mr-2"></i>
+                            <span id="cps">0</span> RCC/15 сек
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-xl font-bold text-gray-800 flex items-center">
+                            <i class="fas fa-business-time mr-3 text-green-500"></i> Ваши бизнесы
+                        </h2>
+                        <button id="open-business-modal" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-medium transition flex items-center pulse-button">
+                            <i class="fas fa-plus mr-2"></i> Открыть бизнес
+                        </button>
+                    </div>
+                    
+                    <div class="space-y-4" id="owned-businesses">
+                        <!-- Список купленных бизнесов будет добавляться сюда динамически -->
+                        <div class="bg-yellow-50/80 border border-yellow-200 rounded-lg p-4 text-center">
+                            <p class="text-yellow-700">У вас пока нет бизнесов. Нажмите "Открыть бизнес", чтобы начать!</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Глобальные улучшения -->
+                    <div class="mt-10">
+                        <h2 class="text-xl font-bold text-gray-800 flex items-center mb-4">
+                            <i class="fas fa-star mr-3 text-yellow-500"></i> Глобальные улучшения
+                        </h2>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="global-upgrades">
+                            <!-- Глобальные улучшения будут добавляться сюда -->
+                            <div class="global-upgrade p-4 rounded-lg border border-blue-200 transition">
+                                <div class="flex flex-col items-center text-center">
+                                    <div class="upgrade-icon pulse-icon">
+                                        <i class="fas fa-chart-line"></i>
+                                    </div>
+                                    <h3 class="font-semibold text-gray-800">Эффективность бизнеса</h3>
+                                    <p class="text-sm text-gray-600 mb-2">Увеличивает доход всех бизнесов на 10%</p>
+                                    <button onclick="buyGlobalUpgrade('business-efficiency')" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-medium transition">
+                                        <span class="currency-icon"></span>
+                                        5 000 RCC
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="global-upgrade p-4 rounded-lg border border-blue-200 transition">
+                                <div class="flex flex-col items-center text-center">
+                                    <div class="upgrade-icon pulse-icon">
+                                        <i class="fas fa-users"></i>
+                                    </div>
+                                    <h3 class="font-semibold text-gray-800">Премиум клиенты</h3>
+                                    <p class="text-sm text-gray-600 mb-2">Увеличивает доход всех бизнесов на 25%</p>
+                                    <button onclick="buyGlobalUpgrade('premium-clients')" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-medium transition">
+                                        <span class="currency-icon"></span>
+                                        25 000 RCC
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="global-upgrade p-4 rounded-lg border border-blue-200 transition">
+                                <div class="flex flex-col items-center text-center">
+                                    <div class="upgrade-icon pulse-icon">
+                                        <i class="fas fa-lightbulb"></i>
+                                    </div>
+                                    <h3 class="font-semibold text-gray-800">Инновации</h3>
+                                    <p class="text-sm text-gray-600 mb-2">Увеличивает доход всех бизнесов на 50%</p>
+                                    <button onclick="buyGlobalUpgrade('innovations')" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-medium transition">
+                                        <span class="currency-icon"></span>
+                                        50 000 RCC
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="global-upgrade p-4 rounded-lg border border-blue-200 transition">
+                                <div class="flex flex-col items-center text-center">
+                                    <div class="upgrade-icon pulse-icon">
+                                        <i class="fas fa-globe"></i>
+                                    </div>
+                                    <h3 class="font-semibold text-gray-800">Глобальная экспансия</h3>
+                                    <p class="text-sm text-gray-600 mb-2">Увеличивает доход всех бизнесов на 100%</p>
+                                    <button onclick="buyGlobalUpgrade('global-expansion')" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-medium transition">
+                                        <span class="currency-icon"></span>
+                                        100 000 RCC
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Футер с навигацией -->
+    <footer class="nav-footer">
+        <div class="container mx-auto px-4 py-3">
+        <div class="flex justify-around">
+            <!-- Меню -->
+            <a href="menu.html" class="nav-item flex flex-col items-center text-gray-600 hover:text-blue-500">
+                <i class="fas fa-bars text-2xl mb-1"></i>
+                <span class="text-xs">Меню</span>
+            </a>
+            
+            <!-- Бизнес -->
+            <a href="business.html" class="nav-item flex flex-col items-center text-green-500">
+                <i class="fas fa-business-time text-2xl mb-1"></i>
+                <span class="text-xs">Бизнес</span>
+            </a>
+            
+            <!-- Достижения -->
+            <a href="achievements.html" class="nav-item flex flex-col items-center text-gray-600 hover:text-yellow-500">
+                <i class="fas fa-trophy text-2xl mb-1"></i>
+                <span class="text-xs">Достижения</span>
+            </a>
+            
+            <!-- Настройки -->
+            <a href="settings.html" class="nav-item flex flex-col items-center text-gray-600 hover:text-purple-500">
+                <i class="fas fa-cog text-2xl mb-1"></i>
+                <span class="text-xs">Настройки</span>
+            </a>
+        </div>
+        </div>
+    </footer>
+
+    <script>
+        // Глобальные переменные игры
+        let coins = 0;
+        let cps = 0;
+        let currentLevel = 1;
+        let businessIncome = 0;
+        let ownedBusinesses = [];
+        let lastSaveTime = Date.now();
+        const tabId = Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+        let passiveInterval = 15000; // 15 секунд по умолчанию
+        let businessMultiplier = 1; // Множитель дохода бизнесов
+        
+        // Глобальные улучшения
+        const globalUpgrades = {
+            'business-efficiency': {
+                name: 'Эффективность бизнеса',
+                description: 'Увеличивает доход всех бизнесов на 10%',
+                price: 5000,
+                purchased: false,
+                effect: () => { businessMultiplier *= 1.1; },
+                icon: 'fa-chart-line'
+            },
+            'premium-clients': {
+                name: 'Премиум клиенты',
+                description: 'Увеличивает доход всех бизнесов на 25%',
+                price: 25000,
+                purchased: false,
+                effect: () => { businessMultiplier *= 1.25; },
+                icon: 'fa-users'
+            },
+            'innovations': {
+                name: 'Инновации',
+                description: 'Увеличивает доход всех бизнесов на 50%',
+                price: 50000,
+                purchased: false,
+                effect: () => { businessMultiplier *= 1.5; },
+                icon: 'fa-lightbulb'
+            },
+            'global-expansion': {
+                name: 'Глобальная экспансия',
+                description: 'Увеличивает доход всех бизнесов на 100%',
+                price: 100000,
+                purchased: false,
+                effect: () => { businessMultiplier *= 2; },
+                icon: 'fa-globe'
+            }
+        };
+        
+        // Доступные бизнесы (обычные)
+        const regularBusinesses = [
+            {
+                id: 'library',
+                name: 'Библиотека',
+                description: 'Тихий уголок для любителей чтения',
+                basePrice: 1000,
+                baseIncome: 5,
+                icon: 'fa-book',
+                upgrades: [
+                    {
+                        name: 'Дополнительные книги',
+                        description: 'Увеличивает доход на 2 RCC',
+                        price: 500,
+                        incomeIncrease: 2
+                    },
+                    {
+                        name: 'Кофейный уголок',
+                        description: 'Увеличивает доход на 5 RCC',
+                        price: 2000,
+                        incomeIncrease: 5
+                    },
+                    {
+                        name: 'Читальный зал',
+                        description: 'Увеличивает доход на 10 RCC',
+                        price: 5000,
+                        incomeIncrease: 10
+                    }
+                ]
+            },
+            {
+                id: 'museum',
+                name: 'Музей',
+                description: 'Хранитель истории и искусства',
+                basePrice: 5000,
+                baseIncome: 25,
+                icon: 'fa-landmark',
+                upgrades: [
+                    {
+                        name: 'Новая экспозиция',
+                        description: 'Увеличивает доход на 10 RCC',
+                        price: 2500,
+                        incomeIncrease: 10
+                    },
+                    {
+                        name: 'Аудиогиды',
+                        description: 'Увеличивает доход на 15 RCC',
+                        price: 7500,
+                        incomeIncrease: 15
+                    },
+                    {
+                        name: 'Кафе для посетителей',
+                        description: 'Увеличивает доход на 25 RCC',
+                        price: 15000,
+                        incomeIncrease: 25
+                    }
+                ]
+            },
+            {
+                id: 'theater',
+                name: 'Театр',
+                description: 'Место, где оживают истории',
+                basePrice: 15000,
+                baseIncome: 75,
+                icon: 'fa-theater-masks',
+                upgrades: [
+                    {
+                        name: 'Новый репертуар',
+                        description: 'Увеличивает доход на 30 RCC',
+                        price: 7500,
+                        incomeIncrease: 30
+                    },
+                    {
+                        name: 'Реконструкция зала',
+                        description: 'Увеличивает доход на 50 RCC',
+                        price: 20000,
+                        incomeIncrease: 50
+                    },
+                    {
+                        name: 'Известные актеры',
+                        description: 'Увеличивает доход на 75 RCC',
+                        price: 50000,
+                        incomeIncrease: 75
+                    }
+                ]
+            },
+            {
+                id: 'gallery',
+                name: 'Художественная галерея',
+                description: 'Пространство для современного искусства',
+                basePrice: 50000,
+                baseIncome: 250,
+                icon: 'fa-palette',
+                upgrades: [
+                    {
+                        name: 'Выставка известного художника',
+                        description: 'Увеличивает доход на 100 RCC',
+                        price: 25000,
+                        incomeIncrease: 100
+                    },
+                    {
+                        name: 'Мастер-классы',
+                        description: 'Увеличивает доход на 150 RCC',
+                        price: 50000,
+                        incomeIncrease: 150
+                    },
+                    {
+                        name: 'Кафе с видом на город',
+                        description: 'Увеличивает доход на 200 RCC',
+                        price: 100000,
+                        incomeIncrease: 200
+                    }
+                ]
+            }
+        ];
+        
+        // Особые бизнесы
+        const specialBusinesses = [
+            {
+                id: 'opera',
+                name: 'Оперный театр',
+                description: 'Вершина музыкального искусства',
+                basePrice: 200000,
+                baseIncome: 1000,
+                icon: 'fa-music',
+                upgrades: [
+                    {
+                        name: 'Гастроли звезд',
+                        description: 'Увеличивает доход на 500 RCC',
+                        price: 100000,
+                        incomeIncrease: 500
+                    },
+                    {
+                        name: 'Оркестр мирового уровня',
+                        description: 'Увеличивает доход на 750 RCC',
+                        price: 250000,
+                        incomeIncrease: 750
+                    },
+                    {
+                        name: 'Золотой зал',
+                        description: 'Увеличивает доход на 1000 RCC',
+                        price: 500000,
+                        incomeIncrease: 1000
+                    }
+                ]
+            },
+            {
+                id: 'space-tourism',
+                name: 'Космический туризм',
+                description: 'Путешествия за пределы Земли',
+                basePrice: 1000000,
+                baseIncome: 5000,
+                icon: 'fa-rocket',
+                upgrades: [
+                    {
+                        name: 'Новые космические корабли',
+                        description: 'Увеличивает доход на 2500 RCC',
+                        price: 500000,
+                        incomeIncrease: 2500
+                    },
+                    {
+                        name: 'Лунная база',
+                        description: 'Увеличивает доход на 5000 RCC',
+                        price: 1500000,
+                        incomeIncrease: 5000
+                    },
+                    {
+                        name: 'Марсианская колония',
+                        description: 'Увеличивает доход на 10000 RCC',
+                        price: 5000000,
+                        incomeIncrease: 10000
+                    }
+                ]
+            },
+            {
+                id: 'ai-research',
+                name: 'ИИ-исследовательский центр',
+                description: 'Разработка искусственного интеллекта',
+                basePrice: 5000000,
+                baseIncome: 25000,
+                icon: 'fa-robot',
+                upgrades: [
+                    {
+                        name: 'Квантовые компьютеры',
+                        description: 'Увеличивает доход на 10000 RCC',
+                        price: 2500000,
+                        incomeIncrease: 10000
+                    },
+                    {
+                        name: 'Нейросети нового поколения',
+                        description: 'Увеличивает доход на 25000 RCC',
+                        price: 7500000,
+                        incomeIncrease: 25000
+                    },
+                    {
+                        name: 'Искусственный суперинтеллект',
+                        description: 'Увеличивает доход на 50000 RCC',
+                        price: 20000000,
+                        incomeIncrease: 50000
+                    }
+                ]
+            }
+        ];
+        
+        // Инициализация игры
+        function initGame() {
+            loadGame();
+            updateUI();
+            startPassiveIncome();
+            initModal();
+            initTabs();
+            renderGlobalUpgrades();
+            
+            // Инициализация синхронизации
+            initSync();
+        }
+        
+        // Инициализация вкладок бизнесов
+        function initTabs() {
+            const regularTab = document.getElementById('regular-tab');
+            const specialTab = document.getElementById('special-tab');
+            
+            regularTab.addEventListener('click', function() {
+                regularTab.classList.add('active');
+                specialTab.classList.remove('active');
+                renderBusinessOptions('regular');
+            });
+            
+            specialTab.addEventListener('click', function() {
+                specialTab.classList.add('active');
+                regularTab.classList.remove('active');
+                renderBusinessOptions('special');
+            });
+        }
+        
+        // Инициализация синхронизации между вкладками
+        function initSync() {
+            // Проверяем, есть ли лидер
+            tryBecomeLeader();
+            
+            // Периодически проверяем, можем ли стать лидером
+            setInterval(tryBecomeLeader, 10000);
+            
+            // Синхронизация данных каждые 1.5 секунды
+            setInterval(() => {
+                const shared = JSON.parse(localStorage.getItem('raccoonClickerShared') || '{}');
+                if (shared.lastUpdater !== tabId) {
+                    coins = shared.coins ?? coins;
+                    cps = shared.cps ?? cps;
+                    currentLevel = shared.currentLevel ?? currentLevel;
+                    updateUI();
+                }
+            }, 1500);
+        }
+        
+        // Попытка стать лидером синхронизации
+        function tryBecomeLeader() {
+            const now = Date.now();
+            const leader = JSON.parse(localStorage.getItem('incomeLeader') || '{}');
+            if (!leader.timestamp || now - leader.timestamp > 20000) {
+                localStorage.setItem('incomeLeader', JSON.stringify({ tabId, timestamp: now }));
+            }
+        }
+        
+        // Инициализация модального окна
+        function initModal() {
+            const modal = document.getElementById('business-modal');
+            const openModalBtn = document.getElementById('open-business-modal');
+            const closeModalBtn = document.getElementById('close-modal');
+            
+            openModalBtn.addEventListener('click', function() {
+                modal.classList.add('active');
+                renderBusinessOptions('regular');
+            });
+            
+            closeModalBtn.addEventListener('click', function() {
+                modal.classList.remove('active');
+            });
+            
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    modal.classList.remove('active');
+                }
+            });
+        }
+        
+        // Рендер вариантов бизнеса в модальном окне
+        function renderBusinessOptions(type = 'regular') {
+            const container = document.getElementById('business-options');
+            container.innerHTML = '';
+            
+            const businesses = type === 'regular' ? regularBusinesses : specialBusinesses;
+            
+            businesses.forEach(business => {
+                // Проверяем, не куплен ли уже этот бизнес
+                const isOwned = ownedBusinesses.some(b => b.id === business.id);
+                
+                if (!isOwned) {
+                    const businessCard = document.createElement('div');
+                    businessCard.className = `business-card business-item bg-white p-4 rounded-lg border border-gray-200 animate-slide-in ${type === 'special' ? 'special-business' : ''}`;
+                    
+                    if (type === 'special') {
+                        businessCard.innerHTML = `
+                            <div class="special-badge">ОСОБЫЙ</div>
+                            <div class="flex flex-col h-full items-center text-center">
+                                <div class="special-business-icon">
+                                    <i class="fas ${business.icon} business-icon"></i>
+                                </div>
+                                <h3 class="text-lg font-semibold text-gray-800 mb-1">${business.name}</h3>
+                                <p class="text-sm text-gray-600 mb-3">${business.description}</p>
+                                <div class="mt-auto w-full">
+                                    <div class="flex justify-between items-center mb-2">
+                                        <span class="text-sm font-medium text-gray-700">Доход:</span>
+                                        <span class="text-sm font-semibold text-green-600">${business.baseIncome} RCC/15 сек</span>
+                                    </div>
+                                    <button onclick="buyBusiness('${business.id}', true)" class="w-full bg-gradient-to-r from-yellow-500 to-red-500 hover:from-yellow-600 hover:to-red-600 text-white py-2 rounded-lg font-medium transition flex items-center justify-center">
+                                        <span class="currency-icon"></span>
+                                        <span>${formatNumber(business.basePrice)} RCC</span>
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        businessCard.innerHTML = `
+                            <div class="flex flex-col h-full items-center text-center">
+                                <div class="business-icon">
+                                    <i class="fas ${business.icon}"></i>
+                                </div>
+                                <h3 class="text-lg font-semibold text-gray-800 mb-1">${business.name}</h3>
+                                <p class="text-sm text-gray-600 mb-3">${business.description}</p>
+                                <div class="mt-auto w-full">
+                                    <div class="flex justify-between items-center mb-2">
+                                        <span class="text-sm font-medium text-gray-700">Доход:</span>
+                                        <span class="text-sm font-semibold text-green-600">${business.baseIncome} RCC/15 сек</span>
+                                    </div>
+                                    <button onclick="buyBusiness('${business.id}')" class="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-lg font-medium transition flex items-center justify-center">
+                                        <span class="currency-icon"></span>
+                                        <span>${formatNumber(business.basePrice)} RCC</span>
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    }
+                    
+                    container.appendChild(businessCard);
+                }
+            });
+            
+            if (container.children.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-2 bg-yellow-50/80 border border-yellow-200 rounded-lg p-4 text-center">
+                        <p class="text-yellow-700">Вы уже открыли все доступные бизнесы этого типа!</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // Покупка бизнеса
+        function buyBusiness(businessId, isSpecial = false) {
+            const businesses = isSpecial ? specialBusinesses : regularBusinesses;
+            const business = businesses.find(b => b.id === businessId);
+            
+            if (!business) return;
+            
+            if (coins >= business.basePrice) {
+                coins -= business.basePrice;
+                
+                // Добавляем бизнес в список купленных
+                ownedBusinesses.push({
+                    id: business.id,
+                    name: business.name,
+                    income: business.baseIncome,
+                    upgrades: [],
+                    icon: business.icon,
+                    isSpecial: isSpecial
+                });
+                
+                // Пересчитываем общий доход
+                calculateBusinessIncome();
+                
+                // Обновляем UI
+                updateUI();
+                renderOwnedBusinesses();
+                
+                // Закрываем модальное окно
+                document.getElementById('business-modal').classList.remove('active');
+                
+                // Сохраняем игру
+                saveGame();
+                
+                // Показываем уведомление
+                showNotification(`Вы открыли бизнес "${business.name}"!`, 'success');
+            } else {
+                showNotification('Не хватает RCC!', 'error');
+            }
+        }
+        
+        // Покупка улучшения для бизнеса
+        function buyBusinessUpgrade(businessId, upgradeIndex) {
+            // Проверяем все типы бизнесов
+            let business = regularBusinesses.find(b => b.id === businessId);
+            if (!business) {
+                business = specialBusinesses.find(b => b.id === businessId);
+            }
+            
+            const ownedBusiness = ownedBusinesses.find(b => b.id === businessId);
+            
+            if (!business || !ownedBusiness) return;
+            
+            const upgrade = business.upgrades[upgradeIndex];
+            
+            // Проверяем, не куплено ли уже это улучшение
+            if (ownedBusiness.upgrades.includes(upgradeIndex)) return;
+            
+            if (coins >= upgrade.price) {
+                coins -= upgrade.price;
+                
+                // Добавляем улучшение
+                ownedBusiness.upgrades.push(upgradeIndex);
+                ownedBusiness.income += upgrade.incomeIncrease;
+                
+                // Пересчитываем общий доход
+                calculateBusinessIncome();
+                
+                // Обновляем UI
+                updateUI();
+                renderOwnedBusinesses();
+                
+                // Сохраняем игру
+                saveGame();
+                
+                // Показываем уведомление
+                showNotification(`Улучшение "${upgrade.name}" куплено!`, 'success');
+            } else {
+                showNotification('Не хватает RCC!', 'error');
+            }
+        }
+        
+        // Покупка глобального улучшения
+        function buyGlobalUpgrade(upgradeId) {
+            const upgrade = globalUpgrades[upgradeId];
+            
+            if (!upgrade || upgrade.purchased) return;
+            
+            if (coins >= upgrade.price) {
+                coins -= upgrade.price;
+                upgrade.purchased = true;
+                upgrade.effect();
+                
+                // Пересчитываем общий доход
+                calculateBusinessIncome();
+                
+                // Обновляем UI
+                updateUI();
+                renderGlobalUpgrades();
+                
+                // Сохраняем игру
+                saveGame();
+                
+                // Показываем уведомление
+                showNotification(`Улучшение "${upgrade.name}" куплено!`, 'success');
+            } else {
+                showNotification('Не хватает RCC!', 'error');
+            }
+        }
+        
+        // Рендер глобальных улучшений
+        function renderGlobalUpgrades() {
+            const container = document.getElementById('global-upgrades');
+            container.innerHTML = '';
+            
+            Object.entries(globalUpgrades).forEach(([id, upgrade]) => {
+                const upgradeCard = document.createElement('div');
+                upgradeCard.className = `global-upgrade p-4 rounded-lg border ${upgrade.purchased ? 'border-green-200 bg-green-50/50' : 'border-blue-200'} transition`;
+                
+                upgradeCard.innerHTML = `
+                    <div class="flex flex-col items-center text-center">
+                        <div class="upgrade-icon ${upgrade.purchased ? '' : 'pulse-icon'}">
+                            <i class="fas ${upgrade.icon} ${upgrade.purchased ? 'text-green-500' : 'text-blue-500'}"></i>
+                        </div>
+                        <h3 class="font-semibold ${upgrade.purchased ? 'text-green-800' : 'text-gray-800'}">${upgrade.name}</h3>
+                        <p class="text-sm ${upgrade.purchased ? 'text-green-600' : 'text-gray-600'} mb-2">${upgrade.description}</p>
+                        ${upgrade.purchased ? 
+                            '<span class="text-green-500 text-xs font-semibold">Приобретено</span>' : 
+                            `<button onclick="buyGlobalUpgrade('${id}')" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-medium transition">
+                                <span class="currency-icon"></span>
+                                ${formatNumber(upgrade.price)} RCC
+                            </button>`
+                        }
+                    </div>
+                `;
+                
+                container.appendChild(upgradeCard);
+            });
+        }
+        
+        // Расчет общего дохода от всех бизнесов
+        function calculateBusinessIncome() {
+            businessIncome = ownedBusinesses.reduce((total, business) => {
+                return total + business.income;
+            }, 0) * businessMultiplier;
+            
+            // Обновляем общие данные
+            updateSharedData();
+        }
+        
+        // Рендер купленных бизнесов
+        function renderOwnedBusinesses() {
+            const container = document.getElementById('owned-businesses');
+            
+            if (ownedBusinesses.length === 0) {
+                container.innerHTML = `
+                    <div class="bg-yellow-50/80 border border-yellow-200 rounded-lg p-4 text-center">
+                        <p class="text-yellow-700">У вас пока нет бизнесов. Нажмите "Открыть бизнес", чтобы начать!</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = '';
+            
+            ownedBusinesses.forEach(business => {
+                const businessData = regularBusinesses.find(b => b.id === business.id) || 
+                                    specialBusinesses.find(b => b.id === business.id);
+                
+                const businessCard = document.createElement('div');
+                businessCard.className = `business-card business-item bg-white p-4 rounded-lg border border-gray-200 animate-slide-in ${business.isSpecial ? 'special-business' : ''}`;
+                
+                if (business.isSpecial) {
+                    businessCard.innerHTML = `
+                        <div class="special-badge">ОСОБЫЙ</div>
+                        <div class="flex flex-col md:flex-row gap-4">
+                            <div class="flex-shrink-0 flex justify-center">
+                                <div class="special-business-icon">
+                                    <i class="fas ${business.icon} business-icon"></i>
+                                </div>
+                            </div>
+                            <div class="flex-grow">
+                                <div class="flex justify-between items-start mb-2">
+                                    <div>
+                                        <h3 class="text-lg font-semibold text-gray-800">${business.name}</h3>
+                                        <p class="text-sm text-gray-600">${businessData.description}</p>
+                                    </div>
+                                    <div class="bg-gradient-to-r from-yellow-100 to-red-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-semibold">
+                                        ${business.income} RCC/15 сек
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-4">
+                                    <h4 class="text-sm font-medium text-gray-700 mb-2">Улучшения:</h4>
+                                    ${renderBusinessUpgrades(business, businessData)}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    businessCard.innerHTML = `
+                        <div class="flex flex-col md:flex-row gap-4">
+                            <div class="flex-shrink-0 flex justify-center">
+                                <div class="business-icon">
+                                    <i class="fas ${business.icon}"></i>
+                                </div>
+                            </div>
+                            <div class="flex-grow">
+                                <div class="flex justify-between items-start mb-2">
+                                    <div>
+                                        <h3 class="text-lg font-semibold text-gray-800">${business.name}</h3>
+                                        <p class="text-sm text-gray-600">${businessData.description}</p>
+                                    </div>
+                                    <div class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-semibold">
+                                        ${business.income} RCC/15 сек
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-4">
+                                    <h4 class="text-sm font-medium text-gray-700 mb-2">Улучшения:</h4>
+                                    ${renderBusinessUpgrades(business, businessData)}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                container.appendChild(businessCard);
+            });
+        }
+        
+        // Рендер улучшений для бизнеса
+        function renderBusinessUpgrades(business, businessData) {
+            if (!businessData.upgrades || businessData.upgrades.length === 0) {
+                return '<p class="text-sm text-gray-500">Нет доступных улучшений</p>';
+            }
+            
+            return businessData.upgrades.map((upgrade, index) => {
+                const isPurchased = business.upgrades.includes(index);
+                return `
+                    <div class="upgrade-item p-3 rounded-lg mb-2 ${isPurchased ? 'bg-green-50/50 border-l-green-500' : 'bg-gray-50'}">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h4 class="font-medium ${isPurchased ? 'text-green-800' : 'text-gray-800'}">${upgrade.name}</h4>
+                                <p class="text-xs ${isPurchased ? 'text-green-600' : 'text-gray-600'}">${upgrade.description}</p>
+                            </div>
+                            ${isPurchased ? 
+                                '<span class="text-green-500 text-sm font-semibold">Куплено</span>' : 
+                                `<button onclick="buyBusinessUpgrade('${business.id}', ${index})" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-medium transition">
+                                    <span class="currency-icon"></span>
+                                    ${formatNumber(upgrade.price)} RCC
+                                </button>`
+                            }
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // Пассивный доход (теперь каждые 15 секунд)
+        function startPassiveIncome() {
+            setInterval(() => {
+                // Получаем общий доход из localStorage
+                const sharedData = JSON.parse(localStorage.getItem('raccoonClickerShared')) || {};
+                const clickerIncome = sharedData.cps * (sharedData.cpsMultiplier || 1) || 0;
+                
+                // Рассчитываем общий доход (клики + бизнес)
+                const totalIncome = clickerIncome + businessIncome;
+                
+                if (totalIncome > 0) {
+                    addCoins(totalIncome);
+                }
+                
+                // Обновляем данные в localStorage
+                updateSharedData();
+            }, passiveInterval);
+        }
+        
+        // Добавление RCC
+        function addCoins(amount) {
+            coins += amount;
+            updateUI();
+            checkLevelUp();
+            saveGame();
+        }
+        
+        // Проверка повышения уровня
+        function checkLevelUp() {
+            // Здесь можно добавить логику повышения уровня, если нужно
+            // В текущей реализации уровень синхронизируется с menu.html
+        }
+        
+        // Показать уведомление
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            let bgColor = 'bg-blue-500';
+            let icon = 'fa-info-circle';
+            
+            if (type === 'success') {
+                bgColor = 'bg-green-500';
+                icon = 'fa-check-circle';
+            } else if (type === 'error') {
+                bgColor = 'bg-red-500';
+                icon = 'fa-exclamation-circle';
+            } else if (type === 'warning') {
+                bgColor = 'bg-yellow-500';
+                icon = 'fa-exclamation-triangle';
+            }
+            
+            notification.className = `fixed top-4 left-1/2 transform -translate-x-1/2 ${bgColor} text-white px-6 py-3 rounded-lg shadow-lg z-50 notification`;
+            notification.innerHTML = `
+                <div class="flex items-center">
+                    <i class="fas ${icon} mr-2"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 2000);
+        }
+        
+        // Обновление интерфейса
+        function updateUI() {
+            // Основные показатели
+            document.getElementById('coins').textContent = formatNumber(Math.floor(coins));
+            
+            // Получаем доход от кликов из localStorage
+            const sharedData = JSON.parse(localStorage.getItem('raccoonClickerShared')) || {};
+            const clickerIncome = sharedData.cps * (sharedData.cpsMultiplier || 1) || 0;
+            
+            // Общий доход (клики + бизнес)
+            const totalIncome = clickerIncome + businessIncome;
+            document.getElementById('cps').textContent = formatNumber(totalIncome.toFixed(1));
+            
+            // Обновляем уровень
+            document.getElementById('current-level').textContent = currentLevel;
+        }
+        
+        // Обновление общих данных (для синхронизации с menu.html)
+        function updateSharedData() {
+            const shared = JSON.parse(localStorage.getItem('raccoonClickerShared') || '{}');
+            
+            // Сохраняем данные бизнеса отдельно
+            const businessData = {
+                ownedBusinesses,
+                businessIncome,
+                globalUpgrades,
+                businessMultiplier,
+                passiveInterval,
+                lastUpdate: Date.now()
+            };
+            
+            localStorage.setItem('raccoonBusinessData', JSON.stringify(businessData));
+            
+            // Обновляем общие данные
+            shared.coins = coins;
+            shared.businessIncome = businessIncome;
+            shared.currentLevel = currentLevel;
+            shared.timestamp = Date.now();
+            shared.lastUpdater = tabId;
+            
+            localStorage.setItem('raccoonClickerShared', JSON.stringify(shared));
+        }
+        
+        // Форматирование чисел с разделителями
+        function formatNumber(num) {
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+        }
+        
+        // Сохранение игры
+        function saveGame() {
+            try {
+                const gameData = {
+                    coins,
+                    currentLevel,
+                    ownedBusinesses,
+                    businessIncome,
+                    globalUpgrades,
+                    businessMultiplier,
+                    passiveInterval,
+                    lastSaveTime: Date.now()
+                };
+                
+                localStorage.setItem('raccoonBusinessData', JSON.stringify(gameData));
+                updateSharedData();
+            } catch (e) {
+                console.warn("Ошибка сохранения:", e);
+            }
+        }
+        
+        // Загрузка игры
+        function loadGame() {
+            // Загружаем данные из menu.html
+            const sharedData = JSON.parse(localStorage.getItem('raccoonClickerShared') || '{}');
+            coins = sharedData.coins || 0;
+            cps = sharedData.cps || 0;
+            currentLevel = sharedData.currentLevel || 1;
+            
+            // Загружаем данные бизнеса
+            const businessData = JSON.parse(localStorage.getItem('raccoonBusinessData') || '{}');
+            ownedBusinesses = businessData.ownedBusinesses || [];
+            businessIncome = businessData.businessIncome || 0;
+            businessMultiplier = businessData.businessMultiplier || 1;
+            passiveInterval = businessData.passiveInterval || 15000;
+            
+            // Загружаем глобальные улучшения
+            const savedUpgrades = businessData.globalUpgrades || {};
+            Object.keys(globalUpgrades).forEach(key => {
+                if (savedUpgrades[key]) {
+                    globalUpgrades[key].purchased = savedUpgrades[key].purchased;
+                    if (globalUpgrades[key].purchased) {
+                        globalUpgrades[key].effect();
+                    }
+                }
+            });
+            
+            lastSaveTime = businessData.lastSaveTime || Date.now();
+            
+            // Рендерим купленные бизнесы
+            renderOwnedBusinesses();
+            
+            // Обновляем общие данные
+            updateSharedData();
+        }
+        
+        // Автоматическое сохранение каждые 30 секунд
+        setInterval(() => {
+            saveGame();
+        }, 30000);
+        
+        // Инициализация при загрузке страницы
+        window.onload = function() {
+            initGame();
+        };
+        
+        // Сохраняем игру при закрытии вкладка
+        window.addEventListener('beforeunload', function(e) {
+            saveGame();
+        });
+    </script>
+</body>
+</html>
