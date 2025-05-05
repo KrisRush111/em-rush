@@ -1,0 +1,1205 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Raccoon Clicker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .progress-bar {
+            height: 20px;
+            transition: width 0.3s ease;
+        }
+        .shop-item {
+            transition: all 0.2s ease;
+        }
+        .shop-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        .click-effect {
+            position: absolute;
+            pointer-events: none;
+            animation: float-up 1s forwards;
+            opacity: 0.8;
+        }
+        @keyframes float-up {
+            0% {
+                transform: translateY(0);
+                opacity: 0.8;
+            }
+            100% {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+        }
+        .raccoon-img {
+            transition: all 0.3s ease;
+            cursor: pointer;
+            max-width: 100%;
+            max-height: 40vh;
+            object-fit: contain;
+            filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.2));
+        }
+        .raccoon-img:active {
+            transform: scale(0.95);
+        }
+        .currency-icon {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="%23f59e0b" d="M12,2C6.48,2,2,6.48,2,12s4.48,10,10,10s10-4.48,10-10S17.52,2,12,2z M12,20c-4.41,0-8-3.59-8-8s3.59-8,8-8 s8,3.59,8,8S16.41,20,12,20z M12,6c-3.31,0-6,2.69-6,6s2.69,6,6,6s6-2.69,6-6S15.31,6,12,6z M12,16c-2.21,0-4-1.79-4-4 s1.79-4,4-4s4,1.79,4,4S14.21,16,12,16z"/><path fill="%23f59e0b" d="M12,10c-1.1,0-2,0.9-2,2s0.9,2,2,2s2-0.9,2-2S13.1,10,12,10z"/></svg>');
+            background-size: contain;
+            margin-right: 4px;
+        }
+        
+        /* Анимация прыжка */
+        @keyframes jump {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-20px);
+            }
+        }
+        
+        .jump-animation {
+            animation: jump 0.5s ease;
+        }
+        
+        /* Защита от копирования */
+        body {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            touch-action: manipulation;
+        }
+        
+        /* Защита от контекстного меню */
+        body {
+            pointer-events: auto;
+        }
+        
+        /* Защита от перетаскивания изображений */
+        img {
+            -webkit-user-drag: none;
+            -khtml-user-drag: none;
+            -moz-user-drag: none;
+            -o-user-drag: none;
+            user-drag: none;
+        }
+        
+        /* Тень под енотом */
+        .raccoon-shadow {
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60%;
+            height: 20px;
+            background: radial-gradient(ellipse at center, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0) 70%);
+            border-radius: 50%;
+            z-index: -1;
+        }
+        
+        /* Анимация тени при клике */
+        .raccoon-shadow:active {
+            transform: translateX(-50%) scale(0.9);
+        }
+        
+        /* Эффект пульсации для мультитач */
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(1.5);
+                opacity: 0;
+            }
+        }
+        
+        .touch-point {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 100;
+            animation: pulse 0.5s ease-out forwards;
+        }
+        
+        /* Оффлайн прогресс */
+        .offline-progress {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 10px;
+            z-index: 1000;
+            display: none;
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        /* Футер с навигацией */
+        .nav-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            z-index: 100;
+            backdrop-filter: blur(10px);
+            background-color: rgba(255, 255, 255, 0.8);
+        }
+        
+        .nav-item {
+            transition: all 0.2s ease;
+        }
+        
+        .nav-item:hover {
+            transform: translateY(-5px);
+        }
+        
+        .nav-item.active {
+            color: #3B82F6;
+        }
+        
+        /* Анимация для уведомлений */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .notification {
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        /* Стили для уровня */
+        .level-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            z-index: 10;
+        }
+        
+        /* Градиентный фон */
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+        
+        /* Анимация для кнопок магазина */
+        @keyframes pulse-glow {
+            0% {
+                box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+            }
+        }
+        
+        .pulse-button {
+            animation: pulse-glow 2s infinite;
+        }
+        
+        /* Стили для карточек магазина */
+        .shop-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+        
+        .shop-card:hover {
+            box-shadow: 0 14px 28px rgba(0, 0, 0, 0.1), 0 10px 10px rgba(0, 0, 0, 0.05);
+            transform: translateY(-5px);
+        }
+        
+        /* Анимация для появления элементов */
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .animate-slide-in {
+            animation: slideIn 0.5s ease-out forwards;
+        }
+        
+        /* Задержки для анимации */
+        .delay-100 {
+            animation-delay: 0.1s;
+        }
+        
+        .delay-200 {
+            animation-delay: 0.2s;
+        }
+        
+        .delay-300 {
+            animation-delay: 0.3s;
+        }
+        
+        /* Стили для главного контейнера */
+        .game-container {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            backdrop-filter: blur(10px);
+        }
+        
+        /* Стили для прогресс бара */
+        .progress-container {
+            background: rgba(229, 231, 235, 0.5);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            background: linear-gradient(90deg, #3B82F6, #60A5FA);
+            height: 100%;
+            transition: width 0.5s ease;
+        }
+        
+        /* Стили для счетчиков */
+        .counter {
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 12px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            backdrop-filter: blur(5px);
+        }
+        
+        /* Анимация для кликов */
+        @keyframes click-pop {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(0.9);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+        
+        .click-pop {
+            animation: click-pop 0.3s ease;
+        }
+        
+        /* Стиль для финального енота */
+        .final-raccoon {
+            transform: scale(1.1);
+            filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.7));
+        }
+        
+        /* Оффлайн прогресс бар */
+        .offline-progress-bar {
+            height: 4px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 2px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+        
+        .offline-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10B981, #34D399);
+            transition: width 0.3s ease;
+        }
+        
+        /* Анимация смены картинки енота */
+        @keyframes raccoonChange {
+            0% {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        
+        .raccoon-change {
+            animation: raccoonChange 0.5s ease-out forwards;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen flex flex-col" oncontextmenu="return false;">
+    <!-- Оффлайн прогресс -->
+    <div id="offline-progress" class="offline-progress">
+        <div class="flex items-center">
+            <i class="fas fa-clock mr-2"></i>
+            <span id="offline-time">0</span> секунд оффлайн
+        </div>
+        <div class="mt-1">
+            Получено <span id="offline-earned">0</span> RCC
+        </div>
+        <div class="offline-progress-bar">
+            <div id="offline-progress-fill" class="offline-progress-fill" style="width: 0%"></div>
+        </div>
+    </div>
+
+    <!-- Основной контейнер игры -->
+    <div id="game-container" class="container mx-auto px-4 py-8 flex-grow mb-16">
+        <div class="flex flex-col lg:flex-row gap-8">
+            <!-- Основная игровая область -->
+            <div class="flex-1">
+                <div class="game-container bg-white/90 rounded-xl p-6 shadow-lg relative">
+                    <!-- Бейдж уровня -->
+                    <div id="level-badge" class="level-badge animate-slide-in">
+                        Уровень <span id="current-level">1</span>
+                    </div>
+                                        
+                    <div class="flex justify-between items-center mb-6">
+                        <div class="counter bg-blue-100/80 text-blue-800 px-4 py-2 rounded-full font-semibold">
+                            <span class="currency-icon"></span>
+                            <span id="coins">0</span> RCC
+                        </div>
+                        <div class="counter bg-green-100/80 text-green-800 px-4 py-2 rounded-full font-semibold">
+                            <i class="fas fa-bolt mr-2"></i>
+                            <span id="cps">0</span> RCC/5 мин
+                        </div>
+                    </div>
+
+                    <div class="relative flex justify-center mb-6 min-h-[250px]">
+                        <div id="raccoon-container" class="relative flex items-center justify-center">
+                            <img id="raccoon" src="https://i.imgur.com/JQ9wX7a.jpg" alt="Енот" class="raccoon-img">
+                            <div class="raccoon-shadow"></div>
+                        </div>
+                    </div>
+
+                    <div class="mb-6">
+                        <div class="flex justify-between mb-2">
+                            <span class="text-sm font-medium text-gray-700">Прогресс до следующего уровня</span>
+                            <span class="text-sm font-medium text-gray-700"><span id="current-progress">0</span>/<span id="target">10000</span> RCC</span>
+                        </div>
+                        <div class="progress-container w-full bg-gray-200/50 rounded-full h-3">
+                            <div id="progress-bar" class="progress-fill rounded-full h-3" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <div class="bg-yellow-50/80 border border-yellow-200 rounded-lg p-4 mb-6 animate-slide-in delay-100">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 text-yellow-500">
+                                <i class="fas fa-info-circle text-xl"></i>
+                            </div>
+                            <div class="ml-3">
+                                <h3 class="text-sm font-medium text-yellow-800">Совет</h3>
+                                <div class="mt-1 text-sm text-yellow-700">
+                                    <p>Кликайте на енота, чтобы собирать RCC! В магазине можно купить улучшения.</p>
+                                    <p class="mt-1">RCC будут начисляться даже когда игра закрыта!</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Магазин -->
+            <div class="lg:w-80">
+                <div class="game-container bg-white/90 rounded-xl p-6 shadow-lg sticky top-4">
+                    <h2 class="text-xl font-bold text-gray-800 mb-6 flex items-center animate-slide-in">
+                        <i class="fas fa-store mr-3 text-blue-500"></i> Магазин
+                    </h2>
+
+                    <div class="space-y-4">
+                        <!-- Улучшение клика -->
+                        <div class="shop-card shop-item bg-white p-4 rounded-lg border border-gray-200 animate-slide-in delay-100">
+                            <div class="flex items-start">
+                                <div class="flex-shrink-0 bg-blue-100 p-3 rounded-lg">
+                                    <i class="fas fa-hand-pointer text-blue-600 text-xl"></i>
+                                </div>
+                                <div class="ml-4 flex-1">
+                                    <h3 class="text-sm font-medium text-gray-800">Улучшенный клик</h3>
+                                    <p class="mt-1 text-xs text-gray-500">+2 RCC за каждый клик</p>
+                                    <div class="mt-3 flex justify-between items-center">
+                                        <span class="text-sm font-semibold text-blue-600"><span id="click-power">1</span> → <span id="next-click-power">3</span> RCC</span>
+                                        <button onclick="buyUpgrade('click')" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-medium transition pulse-button">
+                                            <span id="click-price">100</span> RCC
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Пассивный доход -->
+                        <div class="shop-card shop-item bg-white p-4 rounded-lg border border-gray-200 animate-slide-in delay-200">
+                            <div class="flex items-start">
+                                <div class="flex-shrink-0 bg-green-100 p-3 rounded-lg">
+                                    <i class="fas fa-clock text-green-600 text-xl"></i>
+                                </div>
+                                <div class="ml-4 flex-1">
+                                    <h3 class="text-sm font-medium text-gray-800">Пассивный сбор</h3>
+                                    <p class="mt-1 text-xs text-gray-500">+2 RCC каждые 5 мин</p>
+                                    <div class="mt-3 flex justify-between items-center">
+                                        <span class="text-sm font-semibold text-green-600"><span id="cps-level">0</span> → <span id="next-cps-level">2</span> RCC/5 мин</span>
+                                        <button onclick="buyUpgrade('cps')" class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-full text-xs font-medium transition">
+                                            <span id="cps-price">250</span> RCC
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Улучшение пассивного дохода -->
+                        <div class="shop-card shop-item bg-white p-4 rounded-lg border border-gray-200 animate-slide-in delay-300">
+                            <div class="flex items-start">
+                                <div class="flex-shrink-0 bg-purple-100 p-3 rounded-lg">
+                                    <i class="fas fa-tachometer-alt text-purple-600 text-xl"></i>
+                                </div>
+                                <div class="ml-4 flex-1">
+                                    <h3 class="text-sm font-medium text-gray-800">Улучшенный пассив</h3>
+                                    <p class="mt-1 text-xs text-gray-500">Увеличивает пассивный доход на 50%</p>
+                                    <div class="mt-3 flex justify-between items-center">
+                                        <span class="text-sm font-semibold text-purple-600">×1 → ×1.5</span>
+                                        <button onclick="buyUpgrade('cpsMultiplier')" class="bg-purple-500 hover:bg-purple-600 text-white px-3 py-1 rounded-full text-xs font-medium transition">
+                                            <span id="cps-multiplier-price">1000</span> RCC
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Автокликер -->
+                        <div class="shop-card shop-item bg-white p-4 rounded-lg border border-gray-200 animate-slide-in delay-300">
+                            <div class="flex items-start">
+                                <div class="flex-shrink-0 bg-red-100 p-3 rounded-lg">
+                                    <i class="fas fa-robot text-red-600 text-xl"></i>
+                                </div>
+                                <div class="ml-4 flex-1">
+                                    <h3 class="text-sm font-medium text-gray-800">Автокликер</h3>
+                                    <p class="mt-1 text-xs text-gray-500">Автоматически кликает 1 раз в секунду</p>
+                                    <div class="mt-3 flex justify-between items-center">
+                                        <span class="text-sm font-semibold text-red-600">0 → 1</span>
+                                        <button onclick="buyUpgrade('autoClicker')" class="bg-red-500 hover: bg-red-600 text-white px-3 py-1 rounded-full text-xs font-medium transition">
+                                            <span id="auto-clicker-price">5000</span> RCC
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Футер с навигацией -->
+    <footer class="nav-footer">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex justify-around">
+                <!-- Меню -->
+                <a href="menu.html" class="nav-item flex flex-col items-center text-blue-500">
+                    <i class="fas fa-bars text-2xl mb-1"></i>
+                    <span class="text-xs">Меню</span>
+                </a>
+                                
+                <!-- Бизнес -->
+                <a href="business.html" class="nav-item flex flex-col items-center text-gray-600 hover:text-green-500">
+                    <i class="fas fa-business-time text-2xl mb-1"></i>
+                    <span class="text-xs">Бизнес</span>
+                </a>
+                                
+                <!-- Достижения -->
+                <a href="achievements.html" class="nav-item flex flex-col items-center text-gray-600 hover:text-yellow-500">
+                    <i class="fas fa-trophy text-2xl mb-1"></i>
+                    <span class="text-xs">Достижения</span>
+                </a>
+                                
+                <!-- Настройки -->
+                <a href="settings.html" class="nav-item flex flex-col items-center text-gray-600 hover:text-purple-500">
+                    <i class="fas fa-cog text-2xl mb-1"></i>
+                    <span class="text-xs">Настройки</span>
+                </a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Глобальные переменные игры
+        let coins = 0;
+        let clickPower = 1;
+        let cps = 0;
+        let cpsLevel = 0;
+        let cpsMultiplier = 1;
+        let autoClickers = 0;
+        let currentTarget = 10000;
+        let currentLevel = 1;
+        let activeTouches = {};
+        let lastSaveTime = Date.now();
+        const tabId = Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+        let isFinalLevel = false;
+        let lastOfflineCheck = Date.now();
+
+        // Цели для уровней (только 6 уровней)
+        const levelTargets = [
+            10000,    // Уровень 1
+            100000,   // Уровень 2
+            500000,   // Уровень 3
+            10000000,  // Уровень 4
+            50000000,  // Уровень 5
+            1000000000  // Уровень 6 (последний)
+        ];
+
+        // Изображения енотов для разных уровней
+        const raccoonImages = [
+            'raccoon.jpg',  // Уровень 1
+            'raccoon2.jpg',   // Уровень 2 (замените на реальные URL)
+            'raccoon3.jpg',   // Уровень 3
+            'raccoon4.jpg',   // Уровень 4
+            'raccoon5.jpg',   // Уровень 5
+            'raccoon7.jpg',
+            'raccoon6.jpg'    // Уровень 6 (последний)
+        ];
+
+        // Интервал пассивного дохода (15 секунд)
+        const PASSIVE_INTERVAL = 300000; // 5 минут
+
+        // Максимальное время оффлайн дохода (24 часа)
+        const MAX_OFFLINE_TIME = 24 * 60 * 60 * 1000; // 24 часа в миллисекундах
+
+        // Цены улучшений
+        const upgrades = {
+            click: { 
+                basePrice: 100,
+                price: 100,
+                power: 2,
+                count: 0
+            },
+            cps: { 
+                basePrice: 250,
+                price: 250,
+                power: 2,
+                count: 0
+            },
+            cpsMultiplier: { 
+                basePrice: 1000,
+                price: 1000,
+                multiplier: 1.5,
+                count: 0
+            },
+            autoClicker: { 
+                basePrice: 5000,
+                price: 5000,
+                count: 0
+            }
+        };
+
+        // Инициализация игры
+        function initGame() {
+            loadGame();
+            updateUI();
+            startPassiveIncome();
+            startAutoClickers();
+
+            // Клик по еноту (мышь)
+            document.getElementById('raccoon-container').addEventListener('click', function(e) {
+                handleClick(e.clientX, e.clientY);
+            });
+
+            // Мультитач для мобильных устройств
+            const raccoonContainer = document.getElementById('raccoon-container');
+                        
+            raccoonContainer.addEventListener('touchstart', function(e) {
+                e.preventDefault();
+                const touches = e.changedTouches;
+                                
+                for (let i = 0; i < touches.length; i++) {
+                    const touch = touches[i];
+                    activeTouches[touch.identifier] = touch;
+                                    
+                    // Создаем визуальный эффект касания
+                    createTouchEffect(touch.clientX, touch.clientY);
+                                    
+                    // Добавляем монеты за касание
+                    handleClick(touch.clientX, touch.clientY);
+                }
+            });
+
+            raccoonContainer.addEventListener('touchmove', function(e) {
+                e.preventDefault();
+                const touches = e.changedTouches;
+                                
+                for (let i = 0; i < touches.length; i++) {
+                    const touch = touches[i];
+                    activeTouches[touch.identifier] = touch;
+                }
+            });
+
+            raccoonContainer.addEventListener('touchend', function(e) {
+                e.preventDefault();
+                const touches = e.changedTouches;
+                                
+                for (let i = 0; i < touches.length; i++) {
+                    const touch = touches[i];
+                    delete activeTouches[touch.identifier];
+                }
+            });
+
+            // Защита от копирования через JavaScript
+            document.addEventListener('copy', function(e) {
+                e.preventDefault();
+                showNotification('Копирование запрещено!');
+            });
+
+            document.addEventListener('cut', function(e) {
+                e.preventDefault();
+                showNotification('Вырезание запрещено!');
+            });
+
+            document.addEventListener('dragstart', function(e) {
+                e.preventDefault();
+            });
+
+            // Инициализация синхронизации
+            initSync();
+                        
+            // Проверяем оффлайн прогресс при загрузке
+            checkOfflineProgress();
+                        
+            // Устанавливаем обработчик видимости страницы
+            setupVisibilityHandler();
+        }
+
+        // Инициализация синхронизации между вкладками
+        function initSync() {
+            // Проверяем, есть ли лидер
+            tryBecomeLeader();
+                        
+            // Периодически проверяем, можем ли стать лидером
+            setInterval(tryBecomeLeader, 10000);
+                        
+            // Синхронизация данных каждые 1.5 секунды
+            setInterval(() => {
+                const shared = JSON.parse(localStorage.getItem('raccoonClickerShared') || '{}');
+                if (shared.lastUpdater !== tabId) {
+                    coins = shared.coins ?? coins;
+                    cps = shared.cps ?? cps;
+                    cpsMultiplier = shared.cpsMultiplier ?? cpsMultiplier;
+                    updateUI();
+                }
+            }, 1500);
+        }
+
+        // Попытка стать лидером синхронизации
+        function tryBecomeLeader() {
+            const now = Date.now();
+            const leader = JSON.parse(localStorage.getItem('incomeLeader') || '{}');
+            if (!leader.timestamp || now - leader.timestamp > 20000) {
+                localStorage.setItem('incomeLeader', JSON.stringify({ tabId, timestamp: now }));
+            }
+        }
+
+        // Создать визуальный эффект касания
+        function createTouchEffect(x, y) {
+            const touchEffect = document.createElement('div');
+            touchEffect.className = 'touch-point';
+            touchEffect.style.left = `${x - 20}px`;
+            touchEffect.style.top = `${y - 20}px`;
+            document.body.appendChild(touchEffect);
+                        
+            // Удаляем эффект после анимации
+            setTimeout(() => {
+                touchEffect.remove();
+            }, 500);
+        }
+
+        // Обработка клика/касания
+        function handleClick(x, y) {
+            addCoins(clickPower);
+                        
+            // Анимация прыжка
+            const raccoon = document.getElementById('raccoon');
+            raccoon.classList.add('jump-animation');
+            raccoon.classList.add('click-pop');
+
+            // Удаляем класс анимации после завершения
+            setTimeout(() => {
+                raccoon.classList.remove('jump-animation');
+                raccoon.classList.remove('click-pop');
+            }, 500);
+
+            // Создаем эффект клика
+            const clickEffect = document.createElement('div');
+            clickEffect.className = 'click-effect text-blue-500 font-bold';
+            clickEffect.textContent = `+${clickPower} RCC`;
+            clickEffect.style.left = `${x - 20}px`;
+            clickEffect.style.top = `${y - 20}px`;
+            document.body.appendChild(clickEffect);
+
+            // Удаляем эффект после анимации
+            setTimeout(() => {
+                clickEffect.remove();
+            }, 1000);
+        }
+
+        // Показать уведомление
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.className = 'fixed top-4 left-1/2 transform -translate-x-1/2 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 notification';
+            notification.innerHTML = `
+                <div class="flex items-center">
+                    <i class="fas fa-exclamation-circle mr-2"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.remove();
+            }, 2000);
+        }
+
+        // Добавление RCC
+        function addCoins(amount) {
+            coins += amount;
+            updateUI();
+            checkLevelUp();
+            saveGame();
+        }
+
+        // Проверка повышения уровня
+        function checkLevelUp() {
+            // Если текущий уровень меньше 6 и монет достаточно для следующего уровня
+            if (currentLevel <= 6 && coins >= currentTarget) {
+                currentLevel++;
+                                
+                // Если это не последний уровень (6), устанавливаем следующую цель
+                if (currentLevel <= 6) {
+                    currentTarget = levelTargets[currentLevel - 1];
+                } else {
+                    // После 6 уровня цель становится бесконечной
+                    currentTarget = Infinity;
+                    isFinalLevel = true;
+                }
+                                
+                // Меняем картинку енота (если есть следующая)
+                const raccoon = document.getElementById('raccoon');
+                if (currentLevel - 1 < raccoonImages.length) {
+                    raccoon.src = raccoonImages[currentLevel - 1];
+                    raccoon.classList.add('raccoon-change');
+                                    
+                    // Если это последний уровень, добавляем специальный стиль
+                    if (isFinalLevel) {
+                        raccoon.classList.add('final-raccoon');
+                    }
+                                    
+                    // Удаляем класс анимации после завершения
+                    setTimeout(() => {
+                        raccoon.classList.remove('raccoon-change');
+                    }, 500);
+                }
+                                
+                // Обновляем UI
+                updateUI();
+                                
+                // Показываем уведомление
+                showLevelUpNotification();
+            }
+        }
+
+        // Показать уведомление о повышении уровня
+        function showLevelUpNotification() {
+            const notification = document.createElement('div');
+            notification.className = 'fixed top-4 left-1/2 transform -translate-x-1/2 bg-blue-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-bounce notification';
+                        
+            let message;
+            if (currentLevel <= 6) {
+                message = `Уровень ${currentLevel} достигнут! Новая цель: ${formatNumber(currentTarget)} RCC`;
+            } else {
+                message = `Максимальный уровень достигнут! Теперь вы можете собирать RCC бесконечно!`;
+            }
+                        
+            notification.innerHTML = `
+                <div class="flex items-center">
+                    <i class="fas fa-trophy mr-2 text-yellow-300"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        // Пассивный доход (теперь каждые 15 секунд)
+        function startPassiveIncome() {
+            setInterval(() => {
+                // Получаем общий доход из localStorage
+                const sharedData = JSON.parse(localStorage.getItem('raccoonClickerShared')) || {};
+                const businessIncome = sharedData.businessIncome || 0;
+                                
+                // Рассчитываем общий доход
+                const totalIncome = (cps * cpsMultiplier) + businessIncome;
+                                
+                if (totalIncome > 0) {
+                    addCoins(totalIncome);
+                }
+                                
+                // Обновляем данные в localStorage
+                updateSharedData();
+            }, PASSIVE_INTERVAL);
+        }
+
+        // Автокликеры
+        function startAutoClickers() {
+            setInterval(() => {
+                if (autoClickers > 0) {
+                    for (let i = 0; i < autoClickers; i++) {
+                        addCoins(clickPower);
+                    }
+                }
+            }, 1000);
+        }
+
+        // Покупка улучшения
+        function buyUpgrade(type) {
+            const upgrade = upgrades[type];
+
+            if (coins >= upgrade.price) {
+                coins -= upgrade.price;
+
+                switch (type) {
+                    case 'click':
+                        clickPower += upgrade.power;
+                        upgrade.count++;
+                        upgrade.price = Math.floor(upgrade.basePrice * Math.pow(1.5, upgrade.count));
+                        break;
+                    case 'cps':
+                        cps += upgrade.power;
+                        cpsLevel += upgrade.power;
+                        upgrade.count++;
+                        upgrade.price = Math.floor(upgrade.basePrice * Math.pow(1.8, upgrade.count));
+                        break;
+                    case 'cpsMultiplier':
+                        cpsMultiplier *= upgrade.multiplier;
+                        upgrade.count++;
+                        upgrade.price = Math.floor(upgrade.basePrice * Math.pow(3, upgrade.count));
+                        break;
+                    case 'autoClicker':
+                        autoClickers += 1;
+                        upgrade.count++;
+                        upgrade.price = Math.floor(upgrade.basePrice * Math.pow(2, upgrade.count));
+                        break;
+                }
+
+                updateUI();
+                saveGame();
+                                
+                // Анимация успешной покупки
+                const button = document.querySelector(`button[onclick="buyUpgrade('${type}')"]`);
+                button.classList.add('bg-green-500');
+                setTimeout(() => {
+                    button.classList.remove('bg-green-500');
+                }, 300);
+            } else {
+                showNotification('Не хватает RCC!');
+                                
+                // Анимация ошибки
+                const button = document.querySelector(`button[onclick="buyUpgrade('${type}')"]`);
+                button.classList.add('bg-red-500');
+                setTimeout(() => {
+                    button.classList.remove('bg-red-500');
+                }, 300);
+            }
+        }
+
+        // Обновление интерфейса
+        function updateUI() {
+            // Основные показатели
+            document.getElementById('coins').textContent = formatNumber(Math.floor(coins));
+                        
+            // Получаем доход от бизнеса из localStorage
+            const sharedData = JSON.parse(localStorage.getItem('raccoonClickerShared')) || {};
+            const businessIncome = sharedData.businessIncome || 0;
+                        
+            // Общий доход (клики + бизнес)
+            const totalIncome = (cps * cpsMultiplier) + businessIncome;
+            document.getElementById('cps').textContent = formatNumber(totalIncome.toFixed(1));
+                        
+            // Прогресс бар
+            let progressPercent;
+            if (currentLevel <= 6) {
+                progressPercent = Math.min((coins / currentTarget) * 100, 100);
+                document.getElementById('current-progress').textContent = formatNumber(Math.floor(coins));
+                document.getElementById('target').textContent = formatNumber(currentTarget);
+            } else {
+                // После 6 уровня показываем только текущее количество RCC
+                progressPercent = 100;
+                document.getElementById('current-progress').textContent = formatNumber(Math.floor(coins));
+                document.getElementById('target').textContent = "∞";
+            }
+                        
+            document.getElementById('progress-bar').style.width = `${progressPercent}%`;
+                        
+            // Магазин
+            document.getElementById('click-power').textContent = clickPower;
+            document.getElementById('next-click-power').textContent = clickPower + upgrades.click.power;
+            document.getElementById('click-price').textContent = formatNumber(upgrades.click.price);
+                        
+            document.getElementById('cps-level').textContent = cps;
+            document.getElementById('next-cps-level').textContent = cps + upgrades.cps.power;
+            document.getElementById('cps-price').textContent = formatNumber(upgrades.cps.price);
+                        
+            document.getElementById('cps-multiplier-price').textContent = formatNumber(upgrades.cpsMultiplier.price);
+
+            document.getElementById('auto-clicker-price').textContent = formatNumber(upgrades.autoClicker.price);
+
+            // Обновляем бейдж уровня
+            document.getElementById('current-level').textContent = currentLevel;
+        }
+
+        // Форматирование чисел с разделителями
+        function formatNumber(num) {
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+        }
+
+        // Обновление общих данных (для синхронизации с бизнесом)
+        function updateSharedData() {
+            const shared = JSON.parse(localStorage.getItem('raccoonClickerShared') || '{}');
+            const businessData = JSON.parse(localStorage.getItem('raccoonBusinessData') || '{}');
+            const businessIncome = businessData.businessIncome || 0;
+            const totalIncome = (cps * cpsMultiplier) + businessIncome;
+
+            shared.coins = coins;
+            shared.clickPower = clickPower;
+            shared.cps = cps;
+            shared.cpsMultiplier = cpsMultiplier;
+            shared.businessIncome = businessIncome;
+            shared.totalIncome = totalIncome;
+            shared.timestamp = Date.now();
+            shared.lastUpdater = tabId; // важно для определения последнего обновившего
+            shared.isFinalLevel = isFinalLevel;
+            shared.upgrades = upgrades;
+            shared.lastSaveTime = Date.now();
+            shared.currentLevel = currentLevel; // Сохраняем текущий уровень
+            shared.currentTarget = currentTarget; // Сохраняем текущую цель
+            shared.raccoonImage = raccoonImages[currentLevel - 1]; // Сохраняем текущее изображение енота
+
+            localStorage.setItem('raccoonClickerShared', JSON.stringify(shared));
+        }
+
+        // Сохранение игры
+        function saveGame() {
+            try {
+                const gameData = {
+                    coins,
+                    clickPower,
+                    cps,
+                    cpsLevel,
+                    cpsMultiplier,
+                    autoClickers,
+                    currentTarget,
+                    currentLevel,
+                    isFinalLevel,
+                    lastSaveTime: Date.now(),
+                    upgrades: {
+                        click: { 
+                            basePrice: upgrades.click.basePrice,
+                            price: upgrades.click.price,
+                            power: upgrades.click.power,
+                            count: upgrades.click.count
+                        },
+                        cps: { 
+                            basePrice: upgrades.cps.basePrice,
+                            price: upgrades.cps.price,
+                            power: upgrades.cps.power,
+                            count: upgrades.cps.count
+                        },
+                        cpsMultiplier: { 
+                            basePrice: upgrades.cpsMultiplier.basePrice,
+                            price: upgrades.cpsMultiplier.price,
+                            multiplier: upgrades.cpsMultiplier.multiplier,
+                            count: upgrades.cpsMultiplier.count
+                        },
+                        autoClicker: { 
+                            basePrice: upgrades.autoClicker.basePrice,
+                            price: upgrades.autoClicker.price,
+                            count: upgrades.autoClicker.count
+                        }
+                    }
+                };
+                                
+                // Сохраняем данные игры
+                localStorage.setItem('raccoonClickerData', JSON.stringify(gameData));
+                                
+                // Обновляем общие данные
+                updateSharedData();
+            } catch (e) {
+                console.warn("Ошибка сохранения:", e);
+            }
+        }
+
+        // Загрузка игры
+        function loadGame() {
+            // Загружаем данные игры
+            const savedData = localStorage.getItem('raccoonClickerShared');
+            if (savedData) {
+                const gameData = JSON.parse(savedData);
+                coins = gameData.coins || 0;
+                clickPower = gameData.clickPower || 1;
+                cps = gameData.cps || 0;
+                cpsLevel = gameData.cpsLevel || 0;
+                cpsMultiplier = gameData.cpsMultiplier || 1;
+                autoClickers = gameData.autoClickers || 0;
+                currentTarget = gameData.currentTarget || levelTargets[0];
+                currentLevel = gameData.currentLevel || 1;
+                isFinalLevel = gameData.isFinalLevel || false;
+                lastSaveTime = gameData.lastSaveTime || Date.now();
+                lastOfflineCheck = gameData.lastSaveTime || Date.now();
+
+                // Восстанавливаем улучшения
+                if (gameData.upgrades) {
+                    if (gameData.upgrades.click) {
+                        upgrades.click.basePrice = gameData.upgrades.click.basePrice || upgrades.click.basePrice;
+                        upgrades.click.price = gameData.upgrades.click.price || upgrades.click.price;
+                        upgrades.click.power = gameData.upgrades.click.power || upgrades.click.power;
+                        upgrades.click.count = gameData.upgrades.click.count || 0;
+                    }
+                                    
+                    if (gameData.upgrades.cps) {
+                        upgrades.cps.basePrice = gameData.upgrades.cps.basePrice || upgrades.cps.basePrice;
+                        upgrades.cps.price = gameData.upgrades.cps.price || upgrades.cps.price;
+                        upgrades.cps.power = gameData.upgrades.cps.power || upgrades.cps.power;
+                        upgrades.cps.count = gameData.upgrades.cps.count || 0;
+                    }
+                                    
+                    if (gameData.upgrades.cpsMultiplier) {
+                        upgrades.cpsMultiplier.basePrice = gameData.upgrades.cpsMultiplier.basePrice || upgrades.cpsMultiplier.basePrice;
+                        upgrades.cpsMultiplier.price = gameData.upgrades.cpsMultiplier.price || upgrades.cpsMultiplier.price;
+                        upgrades.cpsMultiplier.multiplier = gameData.upgrades.cpsMultiplier.multiplier || upgrades.cpsMultiplier.multiplier;
+                        upgrades.cpsMultiplier.count = gameData.upgrades.cpsMultiplier.count || 0;
+                    }
+                                    
+                    if (gameData.upgrades.autoClicker) {
+                        upgrades.autoClicker.basePrice = gameData.upgrades.autoClicker.basePrice || upgrades.autoClicker.basePrice;
+                        upgrades.autoClicker.price = gameData.upgrades.autoClicker.price || upgrades.autoClicker.price;
+                        upgrades.autoClicker.count = gameData.upgrades.autoClicker.count || 0;
+                    }
+                }
+
+                // Устанавливаем правильное изображение енота для текущего уровня
+                const raccoon = document.getElementById('raccoon');
+                if (gameData.raccoonImage) {
+                    raccoon.src = gameData.raccoonImage;
+                } else if (currentLevel - 1 < raccoonImages.length) {
+                    raccoon.src = raccoonImages[currentLevel - 1];
+                }
+                                
+                // Если это последний уровень, добавляем специальный стиль
+                if (isFinalLevel) {
+                    raccoon.classList.add('final-raccoon');
+                }
+            }
+                        
+            // Обновляем общие данные
+            updateSharedData();
+        }
+
+        // Проверка оффлайн прогресса
+        function checkOfflineProgress() {
+            const now = Date.now();
+            const offlineTime = Math.min(now - lastOfflineCheck, MAX_OFFLINE_TIME);
+            lastOfflineCheck = now;
+                        
+            if (offlineTime > 5000) { // Показываем только если оффлайн был больше 5 секунд
+                // Получаем общий доход из localStorage
+                const sharedData = JSON.parse(localStorage.getItem('raccoonClickerShared')) || {};
+                const businessIncome = sharedData.businessIncome || 0;
+                                
+                // Рассчитываем общий доход
+                const totalIncome = (cps * cpsMultiplier) + businessIncome;
+                                
+                // Рассчитываем заработанные RCC (теперь каждые 15 секунд)
+                const earnedRCC = Math.floor(totalIncome * (offlineTime / PASSIVE_INTERVAL));
+                                
+                if (earnedRCC > 0) {
+                    // Добавляем заработанные RCC
+                    addCoins(earnedRCC);
+                                    
+                    // Показываем уведомление об оффлайн прогрессе
+                    const offlineProgress = document.getElementById('offline-progress');
+                    document.getElementById('offline-time').textContent = formatTime(offlineTime / 1000);
+                    document.getElementById('offline-earned').textContent = formatNumber(earnedRCC);
+                                    
+                    // Анимация прогресс бара
+                    const progressFill = document.getElementById('offline-progress-fill');
+                    progressFill.style.width = '100%';
+                    setTimeout(() => {
+                        progressFill.style.width = '0%';
+                    }, 3000);
+                                    
+                    offlineProgress.style.display = 'block';
+                                    
+                    // Скрываем через 5 секунд
+                    setTimeout(() => {
+                        offlineProgress.style.display = 'none';
+                    }, 5000);
+                }
+            }
+        }
+                
+        // Форматирование времени для оффлайн прогресса
+        function formatTime(seconds) {
+            if (seconds < 60) {
+                return `${Math.floor(seconds)} секунд`;
+            } else if (seconds < 3600) {
+                const minutes = Math.floor(seconds / 60);
+                return `${minutes} минут`;
+            } else {
+                const hours = Math.floor(seconds / 3600);
+                return `${hours} часов`;
+            }
+        }
+                
+        // Установка обработчика видимости страницы
+        function setupVisibilityHandler() {
+            document.addEventListener('visibilitychange', function() {
+                if (document.visibilityState === 'visible') {
+                    // Страница снова стала видимой - проверяем оффлайн прогресс
+                    checkOfflineProgress();
+                } else {
+                    // Страница стала невидимой - сохраняем игру
+                    saveGame();
+                }
+            });
+        }
+
+        // Автоматическое сохранение каждые 30 секунд
+        setInterval(() => {
+            saveGame();
+        }, 30000);
+
+        // Инициализация при загрузке страницы
+        window.onload = function() {
+            initGame();
+        };
+                
+        // Сохраняем игру при закрытии вкладки
+        window.addEventListener('beforeunload', function(e) {
+            saveGame();
+        });
+    </script>
+</body>
+</html>
