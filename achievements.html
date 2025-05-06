@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Raccoon Clicker - Достижения</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .achievement-card {
+            transition: all 0.3s ease;
+            transform-style: preserve-3d;
+        }
+        
+        .achievement-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .achievement-locked {
+            filter: grayscale(100%);
+            opacity: 0.7;
+        }
+        
+        .achievement-progress {
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(229, 231, 235, 0.5);
+        }
+        
+        .achievement-progress-fill {
+            height: 100%;
+            border-radius: 3px;
+            background: linear-gradient(90deg, #3B82F6, #6366F1);
+            transition: width 0.5s ease;
+        }
+        
+        .referral-input {
+            position: relative;
+        }
+        
+        .referral-input button {
+            position: absolute;
+            right: 0;
+            top: 0;
+            height: 100%;
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+        }
+        
+        .tab-button {
+            transition: all 0.2s ease;
+            border-bottom: 3px solid transparent;
+        }
+        
+        .tab-button:hover {
+            border-bottom-color: rgba(59, 130, 246, 0.3);
+        }
+        
+        .tab-button.active {
+            border-bottom-color: #3B82F6;
+            color: #3B82F6;
+            font-weight: 600;
+        }
+        
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+            }
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes float {
+            0% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-5px);
+            }
+            100% {
+                transform: translateY(0px);
+            }
+        }
+        
+        .floating {
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes shine {
+            0% {
+                background-position: -200px;
+            }
+            100% {
+                background-position: 200px;
+            }
+        }
+        
+        .shine {
+            background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,0) 100%);
+            background-size: 200px 100%;
+            animation: shine 1.5s infinite;
+        }
+
+           /* Футер с навигацией */
+           .nav-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            z-index: 100;
+            backdrop-filter: blur(10px);
+            background-color: rgba(255, 255, 255, 0.8);
+        }
+        
+        .nav-item {
+            transition: all 0.2s ease;
+        }
+        
+        .nav-item:hover {
+            transform: translateY(-5px);
+        }
+        
+        .nav-item.active {
+            color: #3B82F6;
+        }
+        
+    </style>
+</head>
+
+<body class="min-h-screen flex flex-col bg-gradient-to-br from-blue-50 to-indigo-50" oncontextmenu="return false;">
+    <!-- Основной контейнер игры -->
+    <div id="game-container" class="container mx-auto px-4 py-8 flex-grow mb-16">
+        <div class="flex flex-col">
+            <!-- Основная игровая область -->
+            <div class="flex-1">
+                <div class="bg-white/90 rounded-xl p-6 shadow-lg relative">
+                    <!-- Заголовок -->
+                    <div class="flex justify-between items-center mb-6">
+                        <h1 class="text-2xl font-bold text-gray-800 flex items-center">
+                            <i class="fas fa-trophy text-yellow-500 mr-3"></i> Достижения
+                        </h1>
+                    </div>
+                    
+                    <!-- Вкладки -->
+                    <div class="flex border-b border-gray-200 mb-6 overflow-x-auto">
+                        <button id="business-tab" class="tab-button active px-4 py-2 mr-2">
+                            <i class="fas fa-business-time mr-2"></i> Бизнес
+                        </button>
+                        <button id="social-tab" class="tab-button px-4 py-2">
+                            <i class="fas fa-users mr-2"></i> Социальные
+                        </button>
+                    </div>
+                    
+                    <!-- Контент вкладки "Бизнес" -->
+                    <div id="business-content" class="space-y-6">
+                        <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                            <i class="fas fa-chart-line text-blue-500 mr-2"></i> Развитие бизнеса
+                        </h2>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="business-achievements">
+                            <!-- Достижения будут добавляться динамически -->
+                        </div>
+                    </div>
+                    
+                    <!-- Контент вкладки "Социальные" -->
+                    <div id="social-content" class="space-y-6 hidden">
+                        <!-- Подписка на Telegram -->
+                        <div class="bg-white rounded-xl p-6 shadow-md border border-gray-200">
+                            <div class="flex flex-col md:flex-row items-center">
+                                <div class="flex-shrink-0 mb-4 md:mb-0 md:mr-6">
+                                    <div class="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center text-white text-2xl">
+                                        <i class="fab fa-telegram"></i>
+                                    </div>
+                                </div>
+                                <div class="flex-grow">
+                                    <h3 class="text-lg font-semibold text-gray-800 mb-1">Подпишись на наш Telegram</h3>
+                                    <p class="text-sm text-gray-600 mb-3">Получай эксклюзивные бонусы и уведомления о новых функциях</p>
+                                    <button id="telegram-btn" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-medium transition flex items-center justify-center w-full md:w-auto">
+                                        <i class="fab fa-telegram mr-2"></i> Подписаться (+800 RCC)
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Подписка на Telegram партнера -->
+                        <div class="bg-white rounded-xl p-6 shadow-md border border-gray-200">
+                            <div class="flex flex-col md:flex-row items-center">
+                                <div class="flex-shrink-0 mb-4 md:mb-0 md:mr-6">
+                                    <div class="w-16 h-16 bg-purple-500 rounded-full flex items-center justify-center text-white text-2xl">
+                                        <i class="fab fa-telegram"></i>
+                                    </div>
+                                </div>
+                                <div class="flex-grow">
+                                    <h3 class="text-lg font-semibold text-gray-800 mb-1">Подпишись на партнера</h3>
+                                    <p class="text-sm text-gray-600 mb-3">Подпишись на канал нашего партнера и получи бонус</p>
+                                    <button id="partner-telegram-btn" class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg font-medium transition flex items-center justify-center w-full md:w-auto">
+                                        <i class="fab fa-telegram mr-2"></i> Подписаться (+750 RCC)
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Подписка на Telegram партнера 2 -->
+                        <div class="bg-white rounded-xl p-6 shadow-md border border-gray-200">
+                            <div class="flex flex-col md:flex-row items-center">
+                                <div class="flex-shrink-0 mb-4 md:mb-0 md:mr-6">
+                                    <div class="w-16 h-16 bg-pink-500 rounded-full flex items-center justify-center text-white text-2xl">
+                                        <i class="fab fa-telegram"></i>
+                                    </div>
+                                </div>
+                                <div class="flex-grow">
+                                    <h3 class="text-lg font-semibold text-gray-800 mb-1">Подпишись на партнера 2</h3>
+                                    <p class="text-sm text-gray-600 mb-3">Подпишись на канал нашего второго партнера и получи бонус</p>
+                                    <button id="partner-telegram-btn-2" class="bg-pink-500 hover:bg-pink-600 text-white px-4 py-2 rounded-lg font-medium transition flex items-center justify-center w-full md:w-auto">
+                                        <i class="fab fa-telegram mr-2"></i> Подписаться (+500 RCC)
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Пригласи друга -->
+                        <div class="bg-white rounded-xl p-6 shadow-md border border-gray-200">
+                            <div class="flex flex-col md:flex-row items-center">
+                                <div class="flex-shrink-0 mb-4 md:mb-0 md:mr-6">
+                                    <div class="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center text-white text-2xl">
+                                        <i class="fas fa-user-plus"></i>
+                                    </div>
+                                </div>
+                                <div class="flex-grow">
+                                    <h3 class="text-lg font-semibold text-gray-800 mb-1">Пригласи друга</h3>
+                                    <p class="text-sm text-gray-600 mb-3">Получай 10% от дохода каждого приглашенного друга</p>
+                                    
+                                    <div class="referral-input mb-4">
+                                        <input type="text" id="referral-link" class="w-full bg-gray-100 border border-gray-300 rounded-lg px-4 py-2 pr-24" value="https://raccoon-clicker.com?ref=12345" readonly>
+                                        <button id="copy-referral" class="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-lg font-medium transition">
+                                            Копировать
+                                        </button>
+                                    </div>
+                                    
+                                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                                        <h4 class="text-sm font-semibold text-blue-800 mb-1">Твои рефералы:</h4>
+                                        <p class="text-sm text-blue-600">Приглашено друзей: <span id="referral-count" class="font-bold">0</span></p>
+                                        <p class="text-sm text-blue-600">Заработано с рефералов: <span id="referral-earnings" class="font-bold">0</span> RCC</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <footer class="nav-footer">
+        <div class="container mx-auto px-4 py-3">
+        <div class="flex justify-around">
+            <!-- Меню -->
+            <a href="menu.html" class="nav-item flex flex-col items-center text-gray-600 hover:text-blue-500">
+                <i class="fas fa-bars text-2xl mb-1"></i>
+                <span class="text-xs">Меню</span>
+            </a>
+            
+            <!-- Бизнес -->
+            <a href="business.html" class="nav-item flex flex-col items-center text-gray-600 hover:text-green-500">
+                <i class="fas fa-business-time text-2xl mb-1"></i>
+                <span class="text-xs">Бизнес</span>
+            </a>
+            
+            <!-- Достижения -->
+            <a href="achievements.html" class="nav-item flex flex-col items-center text-yellow-500">
+                <i class="fas fa-trophy text-2xl mb-1"></i>
+                <span class="text-xs">Достижения</span>
+            </a>
+            
+            <!-- Настройки -->
+            <a href="settings.html" class="nav-item flex flex-col items-center text-gray-600 hover:text-purple-500">
+                <i class="fas fa-cog text-2xl mb-1"></i>
+                <span class="text-xs">Настройки</span>
+            </a>
+        </div>
+        </div>
+    </footer>
+
+    <script>
+        // Глобальные переменные игры
+        let coins = 0;
+        let currentLevel = 1;
+        let ownedBusinesses = [];
+        let completedAchievements = [];
+        let referralCount = 0;
+        let referralEarnings = 0;
+        let telegramSubscribed = false;
+        let partnerTelegramSubscribed = false;
+        let partnerTelegramSubscribed2 = false;
+        
+        // Достижения, связанные с бизнесом
+        const businessAchievements = [
+            {
+                id: 'first-business',
+                title: 'Первый бизнес',
+                description: 'Открой свой первый бизнес',
+                icon: 'fas fa-store',
+                reward: 100,
+                condition: (gameData) => gameData.ownedBusinesses.length >= 1,
+                progress: (gameData) => gameData.ownedBusinesses.length >= 1 ? 1 : 0
+            },
+            {
+                id: 'business-tycoon',
+                title: 'Бизнес-магнат',
+                description: 'Владейте 5 бизнесами одновременно',
+                icon: 'fas fa-building',
+                reward: 500,
+                condition: (gameData) => gameData.ownedBusinesses.length >= 5,
+                progress: (gameData) => Math.min(gameData.ownedBusinesses.length / 5, 1)
+            },
+            {
+                id: 'millionaire',
+                title: 'Миллионер',
+                description: 'Заработайте 1,000,000 RCC',
+                icon: 'fas fa-money-bill-wave',
+                reward: 1000,
+                condition: (gameData) => gameData.coins >= 1000000,
+                progress: (gameData) => Math.min(gameData.coins / 1000000, 1)
+            },
+            {
+                id: 'upgrade-master',
+                title: 'Мастер улучшений',
+                description: 'Купите 10 улучшений для бизнесов',
+                icon: 'fas fa-tools',
+                reward: 300,
+                condition: (gameData) => {
+                    return gameData.ownedBusinesses.reduce((total, business) => {
+                        return total + business.upgrades.length;
+                    }, 0) >= 10;
+                },
+                progress: (gameData) => {
+                    const totalUpgrades = gameData.ownedBusinesses.reduce((total, business) => {
+                        return total + business.upgrades.length;
+                    }, 0);
+                    return Math.min(totalUpgrades / 10, 1);
+                }
+            },
+            {
+                id: 'passive-income',
+                title: 'Пассивный доход',
+                description: 'Зарабатывайте 500 RCC/15 сек',
+                icon: 'fas fa-coins',
+                reward: 250,
+                condition: (gameData) => {
+                    const sharedData = JSON.parse(localStorage.getItem('raccoonClickerShared')) || {};
+                    const clickerIncome = sharedData.cps * (sharedData.cpsMultiplier || 1) || 0;
+                    const totalIncome = clickerIncome + gameData.businessIncome;
+                    return totalIncome >= 500;
+                },
+                progress: (gameData) => {
+                    const sharedData = JSON.parse(localStorage.getItem('raccoonClickerShared')) || {};
+                    const clickerIncome = sharedData.cps * (sharedData.cpsMultiplier || 1) || 0;
+                    const totalIncome = clickerIncome + gameData.businessIncome;
+                    return Math.min(totalIncome / 500, 1);
+                }
+            },
+            {
+                id: 'global-upgrades',
+                title: 'Глобальное улучшение',
+                description: 'Купите 3 глобальных улучшения',
+                icon: 'fas fa-star',
+                reward: 400,
+                condition: (gameData) => {
+                    return Object.values(gameData.globalUpgrades).filter(upgrade => upgrade.purchased).length >= 3;
+                },
+                progress: (gameData) => {
+                    const purchasedCount = Object.values(gameData.globalUpgrades).filter(upgrade => upgrade.purchased).length;
+                    return Math.min(purchasedCount / 3, 1);
+                }
+            },
+            {
+                id: 'special-business',
+                title: 'Особый бизнес',
+                description: 'Приобретите особый бизнес',
+                icon: 'fas fa-crown',
+                reward: 750,
+                condition: (gameData) => {
+                    return gameData.ownedBusinesses.some(business => business.type === 'special');
+                },
+                progress: (gameData) => gameData.ownedBusinesses.some(business => business.type === 'special') ? 1 : 0
+            },
+            {
+                id: 'premium-business',
+                title: 'Премиум бизнес',
+                description: 'Приобретите премиум бизнес',
+                icon: 'fas fa-gem',
+                reward: 1000,
+                condition: (gameData) => {
+                    return gameData.ownedBusinesses.some(business => business.type === 'premium');
+                },
+                progress: (gameData) => gameData.ownedBusinesses.some(business => business.type === 'premium') ? 1 : 0
+            },
+            {
+                id: 'business-diversity',
+                title: 'Разнообразие',
+                description: 'Владейте бизнесами из 3 разных категорий',
+                icon: 'fas fa-layer-group',
+                reward: 350,
+                condition: (gameData) => {
+                    const categories = new Set(gameData.ownedBusinesses.map(b => b.category));
+                    return categories.size >= 3;
+                },
+                progress: (gameData) => {
+                    const categories = new Set(gameData.ownedBusinesses.map(b => b.category));
+                    return Math.min(categories.size / 3, 1);
+                }
+            },
+            {
+                id: 'business-empire',
+                title: 'Бизнес-империя',
+                description: 'Владейте 10 бизнесами одновременно',
+                icon: 'fas fa-chess-queen',
+                reward: 1500,
+                condition: (gameData) => gameData.ownedBusinesses.length >= 10,
+                progress: (gameData) => Math.min(gameData.ownedBusinesses.length / 10, 1)
+            },
+            {
+                id: 'all-upgrades',
+                title: 'Совершенство',
+                description: 'Купите все улучшения для одного бизнеса',
+                icon: 'fas fa-medal',
+                reward: 800,
+                condition: (gameData) => {
+                    return gameData.ownedBusinesses.some(business => 
+                        business.upgrades.length >= business.maxUpgrades
+                    );
+                },
+                progress: (gameData) => {
+                    const maxProgress = gameData.ownedBusinesses.reduce((max, business) => {
+                        return Math.max(max, business.upgrades.length / (business.maxUpgrades || 5));
+                    }, 0);
+                    return Math.min(maxProgress, 1);
+                }
+            },
+            {
+                id: 'fast-earner',
+                title: 'Быстрый заработок',
+                description: 'Зарабатывайте 10,000 RCC/15 сек',
+                icon: 'fas fa-bolt',
+                reward: 1200,
+                condition: (gameData) => {
+                    const sharedData = JSON.parse(localStorage.getItem('raccoonClickerShared')) || {};
+                    const clickerIncome = sharedData.cps * (sharedData.cpsMultiplier || 1) || 0;
+                    const totalIncome = clickerIncome + gameData.businessIncome;
+                    return totalIncome >= 10000;
+                },
+                progress: (gameData) => {
+                    const sharedData = JSON.parse(localStorage.getItem('raccoonClickerShared')) || {};
+                    const clickerIncome = sharedData.cps * (sharedData.cpsMultiplier || 1) || 0;
+                    const totalIncome = clickerIncome + gameData.businessIncome;
+                    return Math.min(totalIncome / 10000, 1);
+                }
+            },
+            {
+                id: 'business-investor',
+                title: 'Инвестор',
+                description: 'Вложите 50,000 RCC в улучшения бизнесов',
+                icon: 'fas fa-hand-holding-usd',
+                reward: 900,
+                condition: (gameData) => {
+                    return gameData.totalInvested >= 50000;
+                },
+                progress: (gameData) => {
+                    return Math.min((gameData.totalInvested || 0) / 50000, 1);
+                }
+            }
+        ];
+        
+        // Инициализация игры
+        function initGame() {
+            loadGame();
+            initTabs();
+            renderBusinessAchievements();
+            initTelegramButton();
+            initPartnerTelegramButton();
+            initPartnerTelegramButton2();
+            initReferralSystem();
+            
+            // Проверяем достижения каждые 5 секунд
+            setInterval(checkAchievements, 5000);
+        }
+        
+        // Инициализация вкладок
+        function initTabs() {
+            const businessTab = document.getElementById('business-tab');
+            const socialTab = document.getElementById('social-tab');
+            const businessContent = document.getElementById('business-content');
+            const socialContent = document.getElementById('social-content');
+            
+            businessTab.addEventListener('click', function() {
+                businessTab.classList.add('active');
+                socialTab.classList.remove('active');
+                businessContent.classList.remove('hidden');
+                socialContent.classList.add('hidden');
+            });
+            
+            socialTab.addEventListener('click', function() {
+                socialTab.classList.add('active');
+                businessTab.classList.remove('active');
+                socialContent.classList.remove('hidden');
+                businessContent.classList.add('hidden');
+            });
+        }
+        
+        // Рендер достижений бизнеса
+        function renderBusinessAchievements() {
+            const container = document.getElementById('business-achievements');
+            container.innerHTML = '';
+            
+            const gameData = getGameData();
+            
+            businessAchievements.forEach(achievement => {
+                const isCompleted = completedAchievements.includes(achievement.id);
+                const progress = achievement.progress(gameData);
+                const isUnlocked = progress >= 1;
+                
+                const achievementCard = document.createElement('div');
+                achievementCard.className = `achievement-card bg-white rounded-xl p-4 shadow-md border border-gray-200 overflow-hidden relative ${isUnlocked ? '' : 'achievement-locked'}`;
+                
+                if (isCompleted) {
+                    achievementCard.innerHTML = `
+                        <div class="absolute top-0 right-0 bg-yellow-500 text-white text-xs font-bold px-2 py-1 rounded-bl-lg">
+                            <i class="fas fa-check mr-1"></i> Завершено
+                        </div>
+                        <div class="flex items-center mb-3">
+                            <div class="w-12 h-12 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-500 text-xl mr-3">
+                                <i class="${achievement.icon}"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-gray-800">${achievement.title}</h3>
+                                <p class="text-xs text-gray-600">${achievement.description}</p>
+                            </div>
+                        </div>
+                        <div class="bg-green-50 border border-green-200 rounded-lg p-2 text-center">
+                            <span class="text-green-700 text-sm font-semibold">+${achievement.reward} RCC</span>
+                        </div>
+                    `;
+                } else {
+                    achievementCard.innerHTML = `
+                        <div class="flex items-center mb-3">
+                            <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-500 text-xl mr-3">
+                                <i class="${achievement.icon}"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-gray-800">${achievement.title}</h3>
+                                <p class="text-xs text-gray-600">${achievement.description}</p>
+                            </div>
+                        </div>
+                        ${progress < 1 ? `
+                            <div class="mb-2">
+                                <div class="achievement-progress w-full">
+                                    <div class="achievement-progress-fill" style="width: ${progress * 100}%"></div>
+                                </div>
+                                <p class="text-xs text-gray-500 text-right mt-1">${Math.round(progress * 100)}%</p>
+                            </div>
+                        ` : ''}
+                        <button onclick="claimAchievement('${achievement.id}')" class="w-full ${isUnlocked ? 'bg-blue-500 hover:bg-blue-600 pulse' : 'bg-gray-300 cursor-not-allowed'} text-white py-2 rounded-lg font-medium transition">
+                            ${isUnlocked ? `Получить ${achievement.reward} RCC` : 'Не выполнено'}
+                        </button>
+                    `;
+                }
+                
+                container.appendChild(achievementCard);
+            });
+        }
+        
+        // Получение данных игры
+        function getGameData() {
+            const sharedData = JSON.parse(localStorage.getItem('raccoonClickerShared') || '{}');
+            const businessData = JSON.parse(localStorage.getItem('raccoonBusinessData') || '{}');
+            
+            return {
+                coins: sharedData.coins || 0,
+                currentLevel: sharedData.currentLevel || 1,
+                ownedBusinesses: businessData.ownedBusinesses || [],
+                businessIncome: businessData.businessIncome || 0,
+                globalUpgrades: businessData.globalUpgrades || {},
+                totalInvested: businessData.totalInvested || 0
+            };
+        }
+        
+        // Проверка достижений
+        function checkAchievements() {
+            const gameData = getGameData();
+            
+            businessAchievements.forEach(achievement => {
+                if (!completedAchievements.includes(achievement.id) && achievement.condition(gameData)) {
+                    renderBusinessAchievements();
+                }
+            });
+        }
+        
+        // Получение награды за достижение
+        function claimAchievement(achievementId) {
+            const achievement = businessAchievements.find(a => a.id === achievementId);
+            if (!achievement) return;
+            
+            const gameData = getGameData();
+            if (!achievement.condition(gameData) || completedAchievements.includes(achievementId)) return;
+            
+            // Добавляем RCC в бизнес
+            const sharedData = JSON.parse(localStorage.getItem('raccoonClickerShared') || '{}');
+            sharedData.coins = (sharedData.coins || 0) + achievement.reward;
+            localStorage.setItem('raccoonClickerShared', JSON.stringify(sharedData));
+            
+            // Добавляем достижение в список завершенных
+            completedAchievements.push(achievementId);
+            saveGame();
+            
+            // Показываем уведомление
+            showNotification(`Достижение "${achievement.title}" выполнено! +${achievement.reward} RCC`, 'success');
+            
+            // Обновляем список достижений
+            renderBusinessAchievements();
+        }
+        
+        // Инициализация кнопки Telegram
+        function initTelegramButton() {
+            const telegramBtn = document.getElementById('telegram-btn');
+            
+            telegramBtn.addEventListener('click', function() {
+                if (telegramSubscribed) {
+                    showNotification('Вы уже подписаны на наш Telegram канал!', 'info');
+                    return;
+                }
+                
+                // Здесь должна быть ссылка на ваш Telegram канал
+                window.open('https://t.me/Empire_Rush', '_blank');
+                
+                // Добавляем RCC в бизнес
+                const sharedData = JSON.parse(localStorage.getItem('raccoonClickerShared') || '{}');
+                sharedData.coins = (sharedData.coins || 0) + 800;
+                localStorage.setItem('raccoonClickerShared', JSON.stringify(sharedData));
+                
+                telegramSubscribed = true;
+                saveGame();
+                
+                showNotification('Спасибо за подписку! +800 RCC добавлено на ваш счет', 'success');
+                
+                // Обновляем кнопку
+                telegramBtn.innerHTML = '<i class="fab fa-telegram mr-2"></i> Вы подписаны';
+                telegramBtn.classList.remove('bg-blue-500', 'hover:bg-blue-600');
+                telegramBtn.classList.add('bg-gray-400', 'cursor-not-allowed');
+            });
+        }
+        
+        // Инициализация кнопки Telegram партнера
+        function initPartnerTelegramButton() {
+            const partnerTelegramBtn = document.getElementById('partner-telegram-btn');
+            
+            partnerTelegramBtn.addEventListener('click', function() {
+                if (partnerTelegramSubscribed) {
+                    showNotification('Вы уже подписаны на канал партнера!', 'info');
+                    return;
+                }
+                
+                // Здесь должна быть ссылка на Telegram канал партнера
+                window.open('https://t.me/blckgrntown', '_blank');
+                
+                // Добавляем RCC в бизнес
+                const sharedData = JSON.parse(localStorage.getItem('raccoonClickerShared') || '{}');
+                sharedData.coins = (sharedData.coins || 0) + 750;
+                localStorage.setItem('raccoonClickerShared', JSON.stringify(sharedData));
+                
+                partnerTelegramSubscribed = true;
+                saveGame();
+                
+                showNotification('Спасибо за подписку на партнера! +750 RCC добавлено на ваш счет', 'success');
+                
+                // Обновляем кнопку
+                partnerTelegramBtn.innerHTML = '<i class="fab fa-telegram mr-2"></i> Вы подписаны';
+                partnerTelegramBtn.classList.remove('bg-purple-500', 'hover:bg-purple-600');
+                partnerTelegramBtn.classList.add('bg-gray-400', 'cursor-not-allowed');
+            });
+        }
+
+        // Инициализация кнопки Telegram партнера 2
+        function initPartnerTelegramButton2() {
+            const partnerTelegramBtn2 = document.getElementById('partner-telegram-btn-2');
+            
+            partnerTelegramBtn2.addEventListener('click', function() {
+                if (partnerTelegramSubscribed2) {
+                    showNotification('Вы уже подписаны на канал второго партнера!', 'info');
+                    return;
+                }
+                
+                // Здесь должна быть ссылка на Telegram канал второго партнера
+                window.open('https://t.me/+B2__ISBapKtkOTRi', '_blank');
+                
+                // Добавляем RCC в бизнес
+                const sharedData = JSON.parse(localStorage.getItem('raccoonClickerShared') || '{}');
+                sharedData.coins = (sharedData.coins || 0) + 500;
+                localStorage.setItem('raccoonClickerShared', JSON.stringify(sharedData));
+                
+                partnerTelegramSubscribed2 = true;
+                saveGame();
+                
+                showNotification('Спасибо за подписку на второго партнера! +500 RCC добавлено на ваш счет', 'success');
+                
+                // Обновляем кнопку
+                partnerTelegramBtn2.innerHTML = '<i class="fab fa-telegram mr-2"></i> Вы подписаны';
+                partnerTelegramBtn2.classList.remove('bg-pink-500', 'hover:bg-pink-600');
+                partnerTelegramBtn2.classList.add('bg-gray-400', 'cursor-not-allowed');
+            });
+        }
+        
+        // Инициализация реферальной системы
+        function initReferralSystem() {
+            const referralLink = document.getElementById('referral-link');
+            const copyBtn = document.getElementById('copy-referral');
+            
+            // Генерируем уникальный реферальный код, если его нет
+            let referralCode = localStorage.getItem('raccoonReferralCode');
+            if (!referralCode) {
+                referralCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+                localStorage.setItem('raccoonReferralCode', referralCode);
+            }
+            
+            // Устанавливаем ссылку
+            referralLink.value = `https://t.me/Empire_Rush_bot?start=_tgr_XlaBmwhmYTVi`;
+            
+            // Кнопка копирования
+            copyBtn.addEventListener('click', function() {
+                referralLink.select();
+                document.execCommand('copy');
+                
+                showNotification('Ссылка скопирована в буфер обмена!', 'success');
+                
+                // Анимация кнопки
+                copyBtn.innerHTML = '<i class="fas fa-check mr-1"></i> Скопировано';
+                copyBtn.classList.remove('bg-indigo-500', 'hover:bg-indigo-600');
+                copyBtn.classList.add('bg-green-500');
+                
+                setTimeout(() => {
+                    copyBtn.innerHTML = 'Копировать';
+                    copyBtn.classList.remove('bg-green-500');
+                    copyBtn.classList.add('bg-indigo-500', 'hover:bg-indigo-600');
+                }, 2000);
+            });
+            
+            // Обновляем статистику рефералов
+            document.getElementById('referral-count').textContent = referralCount;
+            document.getElementById('referral-earnings').textContent = formatNumber(referralEarnings);
+        }
+        
+        // Показать уведомление
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            let bgColor = 'bg-blue-500';
+            let icon = 'fa-info-circle';
+            
+            if (type === 'success') {
+                bgColor = 'bg-green-500';
+                icon = 'fa-check-circle';
+            } else if (type === 'error') {
+                bgColor = 'bg-red-500';
+                icon = 'fa-exclamation-circle';
+            } else if (type === 'warning') {
+                bgColor = 'bg-yellow-500';
+                icon = 'fa-exclamation-triangle';
+            }
+            
+            notification.className = `fixed top-4 left-1/2 transform -translate-x-1/2 ${bgColor} text-white px-6 py-3 rounded-lg shadow-lg z-50`;
+            notification.innerHTML = `
+                <div class="flex items-center">
+                    <i class="fas ${icon} mr-2"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 2000);
+        }
+        
+        // Форматирование чисел с разделителями
+        function formatNumber(num) {
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+        }
+        
+        // Сохранение игры
+        function saveGame() {
+            try {
+                const gameData = {
+                    completedAchievements,
+                    referralCount,
+                    referralEarnings,
+                    telegramSubscribed,
+                    partnerTelegramSubscribed,
+                    partnerTelegramSubscribed2,
+                    lastSaveTime: Date.now()
+                };
+                
+                localStorage.setItem('raccoonAchievements', JSON.stringify(gameData));
+            } catch (e) {
+                console.warn("Ошибка сохранения:", e);
+            }
+        }
+        
+        // Загрузка игры
+        function loadGame() {
+            // Загружаем данные из menu.html
+            const sharedData = JSON.parse(localStorage.getItem('raccoonClickerShared') || '{}');
+            coins = sharedData.coins || 0;
+            currentLevel = sharedData.currentLevel || 1;
+            
+            // Загружаем данные бизнеса
+            const businessData = JSON.parse(localStorage.getItem('raccoonBusinessData') || '{}');
+            ownedBusinesses = businessData.ownedBusinesses || [];
+            
+            // Загружаем данные достижений
+            const achievementsData = JSON.parse(localStorage.getItem('raccoonAchievements') || '{}');
+            completedAchievements = achievementsData.completedAchievements || [];
+            referralCount = achievementsData.referralCount || 0;
+            referralEarnings = achievementsData.referralEarnings || 0;
+            telegramSubscribed = achievementsData.telegramSubscribed || false;
+            partnerTelegramSubscribed = achievementsData.partnerTelegramSubscribed || false;
+            partnerTelegramSubscribed2 = achievementsData.partnerTelegramSubscribed2 || false;
+            
+            // Обновляем UI
+            updateUI();
+        }
+        
+        // Обновление интерфейса
+        function updateUI() {
+            // Обновляем состояние кнопки Telegram
+            if (telegramSubscribed) {
+                const telegramBtn = document.getElementById('telegram-btn');
+                telegramBtn.innerHTML = '<i class="fab fa-telegram mr-2"></i> Вы подписаны';
+                telegramBtn.classList.remove('bg-blue-500', 'hover:bg-blue-600');
+                telegramBtn.classList.add('bg-gray-400', 'cursor-not-allowed');
+            }
+            
+            // Обновляем состояние кнопки Telegram партнера
+            if (partnerTelegramSubscribed) {
+                const partnerBtn = document.getElementById('partner-telegram-btn');
+                partnerBtn.innerHTML = '<i class="fab fa-telegram mr-2"></i> Вы подписаны';
+                partnerBtn.classList.remove('bg-purple-500', 'hover:bg-purple-600');
+                partnerBtn.classList.add('bg-gray-400', 'cursor-not-allowed');
+            }
+            
+            // Обновляем состояние кнопки Telegram партнера 2
+            if (partnerTelegramSubscribed2) {
+                const partnerBtn2 = document.getElementById('partner-telegram-btn-2');
+                partnerBtn2.innerHTML = '<i class="fab fa-telegram mr-2"></i> Вы подписаны';
+                partnerBtn2.classList.remove('bg-pink-500', 'hover:bg-pink-600');
+                partnerBtn2.classList.add('bg-gray-400', 'cursor-not-allowed');
+            }
+        }
+        
+        // Автоматическое сохранение каждые 30 секунд
+        setInterval(() => {
+            saveGame();
+        }, 30000);
+        
+        // Инициализация при загрузке страницы
+        window.onload = function() {
+            initGame();
+        };
+        
+        // Сохраняем игру при закрытии вкладки
+        window.addEventListener('beforeunload', function(e) {
+            saveGame();
+        });
+    </script>
+</body>
+</html>
