@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Empire Rush</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(-45deg, #1a2a6c, #b21f1f, #fdbb2d);
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
+        }
+        
+        .loader {
+            width: 48px;
+            height: 48px;
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .floating {
+            animation: floating 3s ease-in-out infinite;
+        }
+        
+        @keyframes floating {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+            100% { transform: translateY(0px); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 1.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .raccoon-icon {
+            position: relative;
+            width: 100px;
+            height: 100px;
+        }
+        
+        .raccoon-face {
+            width: 80px;
+            height: 70px;
+            background: #5c4d3c;
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+            position: relative;
+        }
+        
+        .raccoon-mask {
+            width: 70px;
+            height: 40px;
+            background: #2d2520;
+            border-radius: 20px;
+            position: absolute;
+            top: 15px;
+            left: 5px;
+        }
+        
+        .raccoon-eye {
+            width: 12px;
+            height: 12px;
+            background: white;
+            border-radius: 50%;
+            position: absolute;
+            top: 25px;
+        }
+        
+        .eye-left {
+            left: 20px;
+        }
+        
+        .eye-right {
+            right: 20px;
+        }
+        
+        .raccoon-nose {
+            width: 10px;
+            height: 8px;
+            background: #ff6b8b;
+            border-radius: 50%;
+            position: absolute;
+            bottom: 15px;
+            left: 35px;
+        }
+        
+        .ear {
+            width: 25px;
+            height: 25px;
+            background: #5c4d3c;
+            border-radius: 50%;
+            position: absolute;
+            top: -10px;
+        }
+        
+        .ear-left {
+            left: 5px;
+            transform: rotate(-30deg);
+        }
+        
+        .ear-right {
+            right: 5px;
+            transform: rotate(30deg);
+        }
+        
+        .ear-inner {
+            width: 12px;
+            height: 12px;
+            background: #2d2520;
+            border-radius: 50%;
+            position: absolute;
+            top: 6px;
+            left: 6px;
+        }
+        
+        .qr-container {
+            background: white;
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            margin-top: 30px;
+        }
+        
+        .qr-code {
+            width: 250px;
+            height: 250px;
+            background: white;
+            padding: 10px;
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .money-float {
+            position: absolute;
+            opacity: 0.7;
+            animation: moneyFloat linear infinite;
+        }
+        
+        @keyframes moneyFloat {
+            0% { transform: translateY(0) rotate(0deg); }
+            100% { transform: translateY(-100vh) rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen flex flex-col items-center justify-center text-white overflow-hidden relative">
+    <!-- Mobile Content (hidden by default) -->
+    <div id="mobile-content" class="hidden text-center px-4 max-w-4xl mx-auto fade-in z-10">
+        <div class="floating mb-8">
+            <div class="raccoon-icon mx-auto">
+                <div class="ear ear-left">
+                    <div class="ear-inner"></div>
+                </div>
+                <div class="ear ear-right">
+                    <div class="ear-inner"></div>
+                </div>
+                <div class="raccoon-face">
+                    <div class="raccoon-mask"></div>
+                    <div class="raccoon-eye eye-left"></div>
+                    <div class="raccoon-eye eye-right"></div>
+                    <div class="raccoon-nose"></div>
+                </div>
+            </div>
+            <div class="flex justify-center mt-4">
+                <i class="fas fa-money-bill-wave text-3xl mx-2 text-yellow-300"></i>
+                <i class="fas fa-coins text-3xl mx-2 text-yellow-300"></i>
+                <i class="fas fa-sack-dollar text-3xl mx-2 text-yellow-300"></i>
+            </div>
+        </div>
+        
+        <h1 class="text-5xl md:text-7xl font-bold mb-6 tracking-tight">
+            Welcome to <span class="text-yellow-300">Empire Rush</span>
+        </h1>
+        
+        <p class="text-xl md:text-2xl mb-10 opacity-90 font-light max-w-2xl mx-auto">
+            Build your financial empire with cunning strategy. The ultimate money-making adventure awaits!
+        </p>
+        
+        <div class="flex flex-col items-center">
+            <div class="loader mb-6"></div>
+            
+            <div class="bg-black bg-opacity-20 rounded-full px-6 py-3 flex items-center">
+                <span class="mr-2">Loading in</span>
+                <span id="countdown" class="font-bold">5</span>
+                <span class="ml-1">seconds</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Desktop Content (hidden by default) -->
+    <div id="desktop-content" class="hidden text-center px-4 max-w-4xl mx-auto fade-in z-10">
+        <div class="floating mb-8">
+            <div class="raccoon-icon mx-auto">
+                <div class="ear ear-left">
+                    <div class="ear-inner"></div>
+                </div>
+                <div class="ear ear-right">
+                    <div class="ear-inner"></div>
+                </div>
+                <div class="raccoon-face">
+                    <div class="raccoon-mask"></div>
+                    <div class="raccoon-eye eye-left"></div>
+                    <div class="raccoon-eye eye-right"></div>
+                    <div class="raccoon-nose"></div>
+                </div>
+            </div>
+        </div>
+        
+        <h1 class="text-5xl md:text-7xl font-bold mb-6 tracking-tight">
+            <span class="text-yellow-300">Empire Rush</span>
+        </h1>
+        
+        <p class="text-xl md:text-2xl mb-6 opacity-90 font-light max-w-2xl mx-auto">
+            The ultimate money-making adventure is available only on mobile devices!
+        </p>
+        
+        <div class="qr-container pulse">
+            <h3 class="text-black font-bold mb-4">Scan to play on your phone</h3>
+            <div class="qr-code mx-auto">
+                <img src="qr-code.png" alt="QR Code" class="w-full h-full">
+            </div>
+            <p class="text-black mt-4 text-sm">Point your phone's camera at the QR code</p>
+        </div>
+        
+        <div class="mt-8 bg-black bg-opacity-20 rounded-full px-6 py-3 inline-block">
+            <i class="fas fa-mobile-alt mr-2"></i>
+            <span>Mobile game experience</span>
+        </div>
+    </div>
+    
+    <div class="absolute bottom-6 left-0 right-0 text-center text-sm opacity-70 z-10">
+        <p>© 2025 Empire Rush. All rights reserved.</p>
+    </div>
+    
+    <!-- Floating money elements -->
+    <div class="money-float" style="left: 10%; animation-duration: 20s; animation-delay: 0s;">
+        <i class="fas fa-money-bill-wave text-2xl"></i>
+    </div>
+    <div class="money-float" style="left: 20%; animation-duration: 25s; animation-delay: 2s;">
+        <i class="fas fa-coins text-3xl"></i>
+    </div>
+    <div class="money-float" style="left: 30%; animation-duration: 22s; animation-delay: 1s;">
+        <i class="fas fa-money-bill-trend-up text-xl"></i>
+    </div>
+    <div class="money-float" style="left: 70%; animation-duration: 18s; animation-delay: 3s;">
+        <i class="fas fa-sack-dollar text-3xl"></i>
+    </div>
+    <div class="money-float" style="left: 85%; animation-duration: 30s; animation-delay: 4s;">
+        <i class="fas fa-money-bill-transfer text-2xl"></i>
+    </div>
+    
+    <script>
+        // Check if user is on a mobile device
+        function isMobileDevice() {
+            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        }
+        
+        // Show appropriate content based on device
+        if (isMobileDevice()) {
+            document.getElementById('mobile-content').classList.remove('hidden');
+            
+            // Countdown timer for mobile
+            let seconds = 5;
+            const countdownElement = document.getElementById('countdown');
+            const countdownInterval = setInterval(() => {
+                seconds--;
+                countdownElement.textContent = seconds;
+                
+                if (seconds <= 0) {
+                    clearInterval(countdownInterval);
+                    redirectToMenu();
+                }
+            }, 1000);
+            
+            // Redirect function for mobile
+            function redirectToMenu() {
+                document.querySelector('.loader').classList.add('opacity-0', 'scale-90', 'transition-all', 'duration-500');
+                document.querySelector('body').classList.add('opacity-0', 'transition-opacity', 'duration-1000');
+                
+                setTimeout(() => {
+                    window.location.href = "menu.html";
+                }, 1000);
+            }
+            
+            // Allow user to skip the wait
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    clearInterval(countdownInterval);
+                    redirectToMenu();
+                }
+            });
+            
+            document.addEventListener('click', () => {
+                clearInterval(countdownInterval);
+                redirectToMenu();
+            });
+        } else {
+            document.getElementById('desktop-content').classList.remove('hidden');
+            
+            // Create additional floating money elements for desktop
+            function createFloatingMoney() {
+                const moneyIcons = [
+                    'fa-money-bill-wave',
+                    'fa-coins',
+                    'fa-sack-dollar',
+                    'fa-money-bill-trend-up',
+                    'fa-money-bill-transfer'
+                ];
+                
+                const colors = [
+                    'text-yellow-300',
+                    'text-yellow-400',
+                    'text-yellow-200',
+                    'text-yellow-500',
+                    'text-amber-300'
+                ];
+                
+                for (let i = 0; i < 10; i++) {
+                    const money = document.createElement('div');
+                    const leftPos = Math.random() * 100;
+                    const duration = 15 + Math.random() * 20;
+                    const delay = Math.random() * 5;
+                    const size = Math.floor(1 + Math.random() * 4);
+                    const iconIndex = Math.floor(Math.random() * moneyIcons.length);
+                    const colorIndex = Math.floor(Math.random() * colors.length);
+                    
+                    money.className = `money-float ${colors[colorIndex]} absolute`;
+                    money.style.left = `${leftPos}%`;
+                    money.style.animationDuration = `${duration}s`;
+                    money.style.animationDelay = `${delay}s`;
+                    money.style.opacity = '0.6';
+                    money.innerHTML = `<i class="fas ${moneyIcons[iconIndex]} text-${size}xl"></i>`;
+                    
+                    document.body.insertBefore(money, document.body.firstChild);
+                }
+            }
+            
+            // Initialize floating money for desktop
+            window.addEventListener('load', createFloatingMoney);
+        }
+    </script>
+</body>
+</html>
