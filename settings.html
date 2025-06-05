@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Raccoon Clicker - Настройки</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+    /* Защита от копирования */
+        body {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            touch-action: manipulation;
+        }
+        
+        /* Защита от контекстного меню */
+        body {
+            pointer-events: auto;
+        }
+
+        .progress-bar {
+            height: 20px;
+            transition: width 0.3s ease;
+        }
+        .business-item {
+            transition: all 0.2s ease;
+        }
+        .business-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        .click-effect {
+            position: absolute;
+            pointer-events: none;
+            animation: float-up 1s forwards;
+            opacity: 0.8;
+        }
+        @keyframes float-up {
+            0% {
+                transform: translateY(0);
+                opacity: 0.8;
+            }
+            100% {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+        }
+        .business-img {
+            transition: all 0.3s ease;
+            max-width: 100%;
+            max-height: 20vh;
+            object-fit: contain;
+            filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.2));
+        }
+        .currency-icon {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="%23f59e0b" d="M12,2C6.48,2,2,6.48,2,12s4.48,10,10,10s10-4.48,10-10S17.52,2,12,2z M12,20c-4.41,0-8-3.59-8-8s3.59-8,8-8 s8,3.59,8,8S16.41,20,12,20z M12,6c-3.31,0-6,2.69-6,6s2.69,6,6,6s6-2.69,6-6S15.31,6,12,6z M12,16c-2.21,0-4-1.79-4-4 s1.79-4,4-4s4,1.79,4,4S14.21,16,12,16z"/><path fill="%23f59e0b" d="M12,10c-1.1,0-2,0.9-2,2s0.9,2,2,2s2-0.9,2-2S13.1,10,12,10z"/></svg>');
+            background-size: contain;
+            margin-right: 4px;
+        }
+        
+        /* Анимация для кнопок */
+        @keyframes pulse-glow {
+            0% {
+                box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+            }
+        }
+        
+        .pulse-button {
+            animation: pulse-glow 2s infinite;
+        }
+        
+        /* Стили для карточек */
+        .settings-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+        
+        .settings-card:hover {
+            box-shadow: 0 14px 28px rgba(0, 0, 0, 0.1), 0 10px 10px rgba(0, 0, 0, 0.05);
+            transform: translateY(-5px);
+        }
+        
+        /* Анимация для появления элементов */
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .animate-slide-in {
+            animation: slideIn 0.5s ease-out forwards;
+        }
+        
+        /* Задержки для анимации */
+        .delay-100 {
+            animation-delay: 0.1s;
+        }
+        
+        .delay-200 {
+            animation-delay: 0.2s;
+        }
+        
+        .delay-300 {
+            animation-delay: 0.3s;
+        }
+        
+        /* Стили для главного контейнера */
+        .game-container {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            backdrop-filter: blur(10px);
+        }
+        
+        /* Стили для модального окна */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+        }
+        
+        .modal-overlay.active .modal-content {
+            transform: translateY(0);
+        }
+        
+        /* Стили для улучшений */
+        .upgrade-item {
+            border-left: 4px solid transparent;
+            transition: all 0.3s ease;
+        }
+        
+        .upgrade-item:hover {
+            border-left-color: #3B82F6;
+            background: rgba(59, 130, 246, 0.05);
+        }
+        
+        /* Стили для прогресс бара */
+        .progress-bar {
+            height: 8px;
+            border-radius: 4px;
+            background: rgba(229, 231, 235, 0.5);
+        }
+        
+        .progress-fill {
+            height: 100%;
+            border-radius: 4px;
+            background: linear-gradient(90deg, #10B981, #34D399);
+            transition: width 0.5s ease;
+        }
+        
+        /* Футер с навигацией */
+        .nav-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            z-index: 100;
+            backdrop-filter: blur(10px);
+            background-color: rgba(255, 255, 255, 0.8);
+        }
+        .footer-item {
+    flex: 1;
+    text-align: center;
+    min-width: 0;
+}
+        .nav-item {
+            transition: all 0.2s ease;
+        }
+        
+        .nav-item:hover {
+            transform: translateY(-5px);
+        }
+        
+        .nav-item.active {
+            color: #3B82F6;
+        }
+        
+        /* Анимация для уведомлений */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .notification {
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        /* Стили для переключателей */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+        
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .slider {
+            background-color: #10B981;
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+        
+        /* Стили для тем */
+        .theme-option {
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .theme-option:hover {
+            transform: scale(1.05);
+        }
+        
+        .theme-option.selected {
+            border-color: #3B82F6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+        }
+        
+        /* Стили для аватаров */
+        .avatar-option {
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border-radius: 50%;
+            border: 2px solid transparent;
+        }
+        
+        .avatar-option:hover {
+            transform: scale(1.1);
+        }
+        
+        .avatar-option.selected {
+            border-color: #3B82F6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+        }
+        
+        /* Стили для ползунков */
+        .slider-range {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: #e0e0e0;
+            outline: none;
+        }
+        
+        .slider-range::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #3B82F6;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .slider-range::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+        
+        /* Стили для иконок настроек */
+        .settings-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: #3B82F6;
+        }
+        
+        /* Стили для секций настроек */
+        .settings-section {
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+        }
+        
+        .settings-section:hover {
+            border-left-color: #3B82F6;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen flex flex-col" oncontextmenu="return false;">
+    <!-- Основной контейнер игры -->
+    <div id="game-container" class="container mx-auto px-4 py-8 flex-grow mb-16">
+        <div class="flex flex-col">
+            <!-- Основная игровая область -->
+            <div class="flex-1">
+                <div class="game-container bg-white/90 rounded-xl p-6 shadow-lg relative">
+                    <h1 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                        <i class="fas fa-cog mr-3 text-purple-500"></i> Настройки
+                    </h1>
+                    
+                    <!-- Вкладки настроек -->
+                    <div class="flex border-b border-gray-200 mb-6 overflow-x-auto">
+                        <button id="general-tab" class="category-tab active px-4 py-2 mr-2">Основные</button>
+                    </div>
+                    
+                    <!-- Содержимое вкладок -->
+                    <div id="settings-content">
+                        <!-- Основные настройки -->
+                        <div id="general-settings" class="settings-content">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <!-- Учетная запись -->
+                                <div class="settings-card p-6 settings-section animate-slide-in">
+                                    <div class="flex items-center mb-4">
+                                        <i class="fas fa-user settings-icon mr-3"></i>
+                                        <h2 class="text-xl font-bold text-gray-800">Учетная запись</h2>
+                                    </div>
+                                    
+                                    <div class="flex flex-col items-center mb-4">
+                                        <div class="relative mb-3">
+                                            <img id="current-avatar" src="https://api.dicebear.com/7.x/bottts-neutral/svg?seed=Raccoon" alt="Аватар" class="w-24 h-24 rounded-full border-2 border-gray-200">
+                                            <button onclick="openAvatarModal()" class="absolute bottom-0 right-0 bg-blue-500 text-white rounded-full p-2 hover:bg-blue-600 transition">
+                                                <i class="fas fa-pencil-alt text-xs"></i>
+                                            </button>
+                                        </div>
+                                        <input type="text" id="username" value="Игрок" class="text-center text-lg font-semibold border-b border-gray-300 focus:outline-none focus:border-blue-500 mb-2">
+                                        <span class="text-sm text-gray-500">Нажмите для изменения</span>
+                                    </div>
+                                    
+                                    <div class="mt-4">
+                                        <button class="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-lg font-medium transition">
+                                            <i class="fas fa-save mr-2"></i> Сохранить изменения
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- О программе -->
+                                <div class="settings-card p-6 settings-section animate-slide-in delay-300">
+                                    <div class="flex items-center mb-4">
+                                        <i class="fas fa-info-circle settings-icon mr-3"></i>
+                                        <h2 class="text-xl font-bold text-gray-800">О программе</h2>
+                                    </div>
+                                    
+                                    <div class="mb-4">
+                                        <p class="text-sm text-gray-600 mb-2"><span class="font-medium">Версия:</span> 1.0.0</p>
+                                        <p class="text-sm text-gray-600 mb-2"><span class="font-medium">Разработчик:</span> KRIS</p>
+                                        <p class="text-sm text-gray-600 mb-2"><span class="font-medium">Дата разработки:</span> 05.04.2025</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно выбора аватара -->
+    <div id="avatar-modal" class="modal-overlay">
+        <div class="modal-content w-full max-w-4xl">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-gray-800">Выбор аватара</h2>
+                <button id="close-avatar-modal" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-4 mb-6 overflow-y-auto max-h-[60vh]">
+                <!-- Животные -->
+                <div class="avatar-option selected" onclick="selectAvatar('raccoon')">
+                    <img src="https://api.dicebear.com/7.x/bottts-neutral/svg?seed=Raccoon" alt="Аватар" class="w-full rounded-full">
+                </div>
+                <div class="avatar-option" onclick="selectAvatar('bear')">
+                    <img src="https://api.dicebear.com/7.x/bottts-neutral/svg?seed=Bear" alt="Аватар" class="w-full rounded-full">
+                </div>
+                <div class="avatar-option" onclick="selectAvatar('fox')">
+                    <img src="https://api.dicebear.com/7.x/bottts-neutral/svg?seed=Fox" alt="Аватар" class="w-full rounded-full">
+                </div>
+                <div class="avatar-option" onclick="selectAvatar('cat')">
+                    <img src="https://api.dicebear.com/7.x/bottts-neutral/svg?seed=Cat" alt="Аватар" class="w-full rounded-full">
+                </div>
+                <div class="avatar-option" onclick="selectAvatar('dog')">
+                    <img src="https://api.dicebear.com/7.x/bottts-neutral/svg?seed=Dog" alt="Аватар" class="w-full rounded-full">
+                </div>
+                <div class="avatar-option" onclick="selectAvatar('panda')">
+                    <img src="https://api.dicebear.com/7.x/bottts-neutral/svg?seed=Panda" alt="Аватар" class="w-full rounded-full">
+                </div>
+                <div class="avatar-option" onclick="selectAvatar('lion')">
+                    <img src="https://api.dicebear.com/7.x/bottts-neutral/svg?seed=Lion" alt="Аватар" class="w-full rounded-full">
+                </div>
+                <div class="avatar-option" onclick="selectAvatar('tiger')">
+                    <img src="https://api.dicebear.com/7.x/bottts-neutral/svg?seed=Tiger" alt="Аватар" class="w-full rounded-full">
+                </div>
+                <div class="avatar-option" onclick="selectAvatar('wolf')">
+                    <img src="https://api.dicebear.com/7.x/bottts-neutral/svg?seed=Wolf" alt="Аватар" class="w-full rounded-full">
+                </div>
+                <div class="avatar-option" onclick="selectAvatar('owl')">
+                    <img src="https://api.dicebear.com/7.x/bottts-neutral/svg?seed=Owl" alt="Аватар" class="w-full rounded-full">
+                </div>
+                <div class="avatar-option" onclick="selectAvatar('rabbit')">
+                    <img src="https://api.dicebear.com/7.x/bottts-neutral/svg?seed=Rabbit" alt="Аватар" class="w-full rounded-full">
+                </div>
+                <div class="avatar-option" onclick="selectAvatar('penguin')">
+                    <img src="https://api.dicebear.com/7.x/bottts-neutral/svg?seed=Penguin" alt="Аватар" class="w-full rounded-full">
+                </div>
+                <div class="avatar-option" onclick="selectAvatar('elephant')">
+                    <img src="https://api.dicebear.com/7.x/bottts-neutral/svg?seed=Elephant" alt="Аватар" class="w-full rounded-full">
+                </div>
+                <div class="avatar-option" onclick="selectAvatar('giraffe')">
+                    <img src="https://api.dicebear.com/7.x/bottts-neutral/svg?seed=Giraffe" alt="Аватар" class="w-full rounded-full">
+                </div>
+                <div class="avatar-option" onclick="selectAvatar('koala')">
+                    <img src="https://api.dicebear.com/7.x/bottts-neutral/svg?seed=Koala" alt="Аватар" class="w-full rounded-full">
+                </div>
+                <div class="avatar-option" onclick="selectAvatar('monkey')">
+                    <img src="https://api.dicebear.com/7.x/bottts-neutral/svg?seed=Monkey" alt="Аватар" class="w-full rounded-full">
+                </div>
+                <div class="avatar-option" onclick="selectAvatar('octopus')">
+                    <img src="https://api.dicebear.com/7.x/bottts-neutral/svg?seed=Octopus" alt="Аватар" class="w-full rounded-full">
+                </div>
+                <div class="avatar-option" onclick="selectAvatar('parrot')">
+                    <img src="https://api.dicebear.com/7.x/bottts-neutral/svg?seed=Parrot" alt="Аватар" class="w-full rounded-full">
+                </div>
+                <div class="avatar-option" onclick="selectAvatar('shark')">
+                    <img src="https://api.dicebear.com/7.x/bottts-neutral/svg?seed=Shark" alt="Аватар" class="w-full rounded-full">
+                </div>
+                <div class="avatar-option" onclick="selectAvatar('squirrel')">
+                    <img src="https://api.dicebear.com/7.x/bottts-neutral/svg?seed=Squirrel" alt="Аватар" class="w-full rounded-full">
+                </div>
+                <div class="avatar-option" onclick="selectAvatar('turtle')">
+                    <img src="https://api.dicebear.com/7.x/bottts-neutral/svg?seed=Turtle" alt="Аватар" class="w-full rounded-full">
+                </div>
+                <div class="avatar-option" onclick="selectAvatar('unicorn')">
+                    <img src="https://api.dicebear.com/7.x/bottts-neutral/svg?seed=Unicorn" alt="Аватар" class="w-full rounded-full">
+                </div>
+                <div class="avatar-option" onclick="selectAvatar('whale')">
+                    <img src="https://api.dicebear.com/7.x/bottts-neutral/svg?seed=Whale" alt="Аватар" class="w-full rounded-full">
+                </div>
+                <div class="avatar-option" onclick="selectAvatar('zebra')">
+                    <img src="https://api.dicebear.com/7.x/bottts-neutral/svg?seed=Zebra" alt="Аватар" class="w-full rounded-full">
+                </div>
+                <div class="avatar-option" onclick="selectAvatar('hippo')">
+                    <img src="https://api.dicebear.com/7.x/bottts-neutral/svg?seed=Hippo" alt="Аватар" class="w-full rounded-full">
+                </div>
+                <div class="avatar-option" onclick="selectAvatar('rhino')">
+                    <img src="https://api.dicebear.com/7.x/bottts-neutral/svg?seed=Rhino" alt="Аватар" class="w-full rounded-full">
+                </div>
+                <div class="avatar-option" onclick="selectAvatar('crocodile')">
+                    <img src="https://api.dicebear.com/7.x/bottts-neutral/svg?seed=Crocodile" alt="Аватар" class="w-full rounded-full">
+                </div>
+                <div class="avatar-option" onclick="selectAvatar('gorilla')">
+                    <img src="https://api.dicebear.com/7.x/bottts-neutral/svg?seed=Gorilla" alt="Аватар" class="w-full rounded-full">
+                </div>
+                <div class="avatar-option" onclick="selectAvatar('kangaroo')">
+                    <img src="https://api.dicebear.com/7.x/bottts-neutral/svg?seed=Kangaroo" alt="Аватар" class="w-full rounded-full">
+                </div>
+                <div class="avatar-option" onclick="selectAvatar('sloth')">
+                    <img src="https://api.dicebear.com/7.x/bottts-neutral/svg?seed=Sloth" alt="Аватар" class="w-full rounded-full">
+                </div>
+                <div class="avatar-option" onclick="selectAvatar('snake')">
+                    <img src="https://api.dicebear.com/7.x/bottts-neutral/svg?seed=Snake" alt="Аватар" class="w-full rounded-full">
+                </div>
+                <div class="avatar-option" onclick="selectAvatar('frog')">
+                    <img src="https://api.dicebear.com/7.x/bottts-neutral/svg?seed=Frog" alt="Аватар" class="w-full rounded-full">
+                </div>
+                <div class="avatar-option" onclick="selectAvatar('dolphin')">
+                    <img src="https://api.dicebear.com/7.x/bottts-neutral/svg?seed=Dolphin" alt="Аватар" class="w-full rounded-full">
+                </div>
+                <div class="avatar-option" onclick="selectAvatar('eagle')">
+                    <img src="https://api.dicebear.com/7.x/bottts-neutral/svg?seed=Eagle" alt="Аватар" class="w-full rounded-full">
+                </div>
+                <div class="avatar-option" onclick="selectAvatar('butterfly')">
+                    <img src="https://api.dicebear.com/7.x/bottts-neutral/svg?seed=Butterfly" alt="Аватар" class="w-full rounded-full">
+                </div>
+                <div class="avatar-option" onclick="selectAvatar('dragon')">
+                    <img src="https://api.dicebear.com/7.x/bottts-neutral/svg?seed=Dragon" alt="Аватар" class="w-full rounded-full">
+                </div>
+                <div class="avatar-option" onclick="selectAvatar('peacock')">
+                    <img src="https://api.dicebear.com/7.x/bottts-neutral/svg?seed=Peacock" alt="Аватар" class="w-full rounded-full">
+                </div>
+            </div>
+            
+            <div class="flex justify-center">
+                <button id="save-avatar" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg font-medium transition">
+                    <i class="fas fa-check mr-2"></i> Сохранить аватар
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="nav-footer">
+        <div class="container mx-auto px-0">
+            <div class="flex justify-between">
+                <!-- Меню -->
+                <a href="menu.html" class="footer-item nav-item flex flex-col items-center text-gray-600 hover:text-blue-500 py-3">
+                    <i class="fas fa-bars  main-icon text-xl mb-1"></i>
+                    <span class="text-xs">Меню</span>
+                </a>
+                
+                <!-- Бизнес -->
+                <a href="business.html" class="footer-item nav-item flex flex-col items-center text-gray-600 hover:text-green-500 py-3">
+                    <i class="fas fa-business-time text-xl mb-1"></i>
+                    <span class="text-xs">Бизнес</span>
+                </a>
+                
+                <!-- Игры (активная) -->
+                <a href="gamess.html" class="footer-item nav-item flex flex-col items-center text-gray-600 hover:text-red-500 py-3">
+                    <i class="fas fa-gamepad text-xl mb-1"></i>
+                    <span class="text-xs">Игры</span>
+                </a>
+                
+                <!-- Достижения -->
+                <a href="achievements.html" class="footer-item nav-item flex flex-col items-center text-gray-600 hover:text-yellow-500 py-3">
+                    <i class="fas fa-trophy text-xl mb-1"></i>
+                    <span class="text-xs">Достижения</span>
+                </a>
+                
+                <!-- Настройки -->
+                <a href="settings.html" class="footer-item nav-item flex flex-col items-center text-purple-500 py-3">
+                    <i class="fas fa-cog main-icon text-xl mb-1"></i>
+                    <span class="text-xs">Настройки</span>
+                </a>
+            </div>
+        </div>
+    </footer>
+    <script>
+        // Глобальные переменные игры
+        let selectedAvatar = 'raccoon';
+        let username = 'Игрок';
+        
+        // Инициализация игры
+        function initGame() {
+            loadSettings();
+            initModals();
+            
+            // Настройка сохранения имени пользователя
+            const usernameInput = document.getElementById('username');
+            usernameInput.addEventListener('change', function() {
+                username = this.value;
+                saveSettings();
+            });
+            
+            // Настройка кнопки сохранения
+            document.querySelector('.settings-card button').addEventListener('click', function() {
+                saveSettings();
+                showNotification('Настройки успешно сохранены!', 'success');
+            });
+        }
+        
+        // Инициализация модальных окон
+        function initModals() {
+            // Модальное окно аватара
+            const avatarModal = document.getElementById('avatar-modal');
+            const closeAvatarModal = document.getElementById('close-avatar-modal');
+            const saveAvatar = document.getElementById('save-avatar');
+            
+            function closeAvatar() {
+                avatarModal.classList.remove('active');
+            }
+            
+            closeAvatarModal.addEventListener('click', closeAvatar);
+            saveAvatar.addEventListener('click', function() {
+                saveSettings();
+                closeAvatar();
+                showNotification('Аватар успешно сохранен!', 'success');
+            });
+        }
+        
+        // Открытие модального окна аватара
+        function openAvatarModal() {
+            document.getElementById('avatar-modal').classList.add('active');
+        }
+        
+        // Выбор аватара
+        function selectAvatar(avatar) {
+            selectedAvatar = avatar;
+            
+            // Обновляем выделение
+            document.querySelectorAll('.avatar-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+            event.currentTarget.classList.add('selected');
+            
+            // Превью аватара
+            document.getElementById('current-avatar').src = `https://api.dicebear.com/7.x/bottts-neutral/svg?seed=${avatar.charAt(0).toUpperCase() + avatar.slice(1)}`;
+        }
+        
+        // Загрузка настроек
+        function loadSettings() {
+            const settings = JSON.parse(localStorage.getItem('raccoonSettings') || '{}');
+            selectedAvatar = settings.avatar || 'raccoon';
+            username = settings.username || 'Игрок';
+            
+            // Применяем настройки
+            document.getElementById('current-avatar').src = `https://api.dicebear.com/7.x/bottts-neutral/svg?seed=${selectedAvatar.charAt(0).toUpperCase() + selectedAvatar.slice(1)}`;
+            document.getElementById('username').value = username;
+        }
+        
+        // Сохранение настроек
+        function saveSettings() {
+            const settings = {
+                avatar: selectedAvatar,
+                username: document.getElementById('username').value
+            };
+            
+            localStorage.setItem('raccoonSettings', JSON.stringify(settings));
+        }
+        
+        // Показать уведомление
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            let bgColor = 'bg-blue-500';
+            let icon = 'fa-info-circle';
+            
+            if (type === 'success') {
+                bgColor = 'bg-green-500';
+                icon = 'fa-check-circle';
+            } else if (type === 'error') {
+                bgColor = 'bg-red-500';
+                icon = 'fa-exclamation-circle';
+            } else if (type === 'warning') {
+                bgColor = 'bg-yellow-500';
+                icon = 'fa-exclamation-triangle';
+            }
+            
+            notification.className = `fixed top-4 left-1/2 transform -translate-x-1/2 ${bgColor} text-white px-6 py-3 rounded-lg shadow-lg z-50 notification`;
+            notification.innerHTML = `
+                <div class="flex items-center">
+                    <i class="fas ${icon} mr-2"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 2000);
+        }
+        
+        // Инициализация при загрузке страницы
+        window.onload = function() {
+            initGame();
+        };
+    </script>
+</body>
+</html>
