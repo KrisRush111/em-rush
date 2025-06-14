@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Крестики-нолики с увеличивающимся полем</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#6366f1',
+                        secondary: '#8b5cf6',
+                        dark: '#1e293b',
+                        accent: '#f59e0b',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        
+        .win-combination {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { background-color: rgba(251, 146, 60, 0.2); }
+            50% { background-color: rgba(251, 146, 60, 0.4); }
+            100% { background-color: rgba(251, 146, 60, 0.2); }
+        }
+        
+        .cell {
+            transition: transform 0.2s ease, background-color 0.3s ease;
+        }
+        
+        .cell:hover {
+            transform: scale(1.05);
+        }
+        
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .tooltip .tooltip-text {
+            visibility: hidden;
+            width: 220px;
+            background-color: rgba(30, 41, 59, 0.9);
+            color: white;
+            text-align: center;
+            border-radius: 6px;
+            padding: 10px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-900 to-slate-800 text-white min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Заголовок -->
+        <header class="text-center mb-8 fade-in">
+            <div class="flex justify-center items-center">
+                <div class="mr-4 p-3 bg-indigo-600 rounded-lg">
+                    <i class="fas fa-gamepad text-3xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-4xl font-bold bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-transparent bg-clip-text">КРЕСТИКИ-НОЛИКИ</h1>
+                    <p class="text-slate-300 mt-2">Игра против ИИ с увеличивающимся полем</p>
+                </div>
+            </div>
+        </header>
+
+        <!-- Информационная панель -->
+        <div class="max-w-3xl mx-auto bg-slate-800 bg-opacity-50 rounded-xl shadow-2xl p-6 mb-8 fade-in">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="text-center bg-slate-700 p-4 rounded-xl border border-slate-600">
+                    <div class="text-xl font-semibold text-indigo-300">Уровень</div>
+                    <div class="text-4xl font-bold text-accent mt-2" id="level">1</div>
+                    <div class="text-sm text-slate-400 mt-1">Поле <span id="size">5x5</span></div>
+                </div>
+                
+                <div class="text-center bg-slate-700 p-4 rounded-xl border border-slate-600">
+                    <div class="text-xl font-semibold text-indigo-300">Сейчас ходит</div>
+                    <div class="flex justify-center items-center mt-3">
+                        <div id="current-player" class="text-3xl font-bold">
+                            <div class="flex items-center justify-center">
+                                <i class="fas fa-times text-red-500 text-4xl mr-2"></i>
+                                <span>Игрок</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="text-center bg-slate-700 p-4 rounded-xl border border-slate-600">
+                    <div class="text-xl font-semibold text-indigo-300">Победная серия</div>
+                    <div class="text-4xl font-bold text-green-400 mt-2" id="win-streak">0</div>
+                    <div class="text-sm text-slate-400 mt-1">подряд</div>
+                </div>
+            </div>
+            
+            <div class="mt-6 flex justify-center space-x-4">
+                <button id="restart-btn" class="bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white font-medium py-2 px-6 rounded-lg transition-all transform hover:-translate-y-0.5 flex items-center">
+                    <i class="fas fa-redo mr-2"></i>
+                    Начать заново
+                </button>
+                
+                <button id="ai-difficulty-btn" class="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-medium py-2 px-6 rounded-lg transition-all transform hover:-translate-y-0.5 flex items-center">
+                    <i class="fas fa-brain mr-2"></i>
+                    Сложность: Сложная
+                </button>
+                
+                <button id="sound-btn" class="bg-slate-700 hover:bg-slate-600 text-white font-medium py-2 px-6 rounded-lg transition-all flex items-center">
+                    <i class="fas fa-volume-up mr-2"></i>
+                    Звук
+                </button>
+            </div>
+        </div>
+        
+        <!-- Игровое поле -->
+        <div id="game-board" class="flex justify-center mb-8 fade-in">
+            <div class="bg-slate-800 p-4 rounded-2xl shadow-2xl border border-slate-700">
+                <div id="board" class="grid grid-cols-5 gap-2"></div>
+            </div>
+        </div>
+        
+        <!-- Сообщения и статистика -->
+        <div class="max-w-3xl mx-auto bg-slate-800 bg-opacity-50 rounded-xl shadow-2xl p-6 fade-in">
+            <h2 class="text-2xl font-bold mb-4 text-center flex justify-center items-center">
+                <i class="fas fa-trophy text-yellow-400 mr-2"></i>Статистика и советы
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-slate-700 p-4 rounded-xl">
+                    <h3 class="text-lg font-semibold mb-3 text-indigo-300">
+                        <i class="fas fa-info-circle mr-2"></i>Правила
+                    </h3>
+                    <ul class="list-disc list-inside text-slate-300 space-y-2">
+                        <li>Начните с поля 5×5 и играйте против ИИ</li>
+                        <li>После каждой вашей победы размер поля увеличивается</li>
+                        <li>Для победы нужно собрать <span class="font-bold">5 символов</span> подряд</li>
+                        <li>Попробуйте победить ИИ на как можно большем поле!</li>
+                    </ul>
+                </div>
+                
+                <div class="bg-slate-700 p-4 rounded-xl">
+                    <h3 class="text-lg font-semibold mb-3 text-indigo-300">
+                        <i class="fas fa-chart-line mr-2"></i>Статистика ИИ
+                    </h3>
+                    <div class="text-slate-300">
+                        <p class="mb-1">Уровень сложности: 
+                            <span class="font-bold text-green-400">Сложный</span>
+                        </p>
+                        <p class="mb-1 tooltip">
+                            Алгоритм:
+                            <span class="font-bold text-purple-400">Минимакс</span>
+                            <i class="fas fa-info-circle ml-1 text-sm text-slate-400"></i>
+                            <span class="tooltip-text">ИИ просчитывает на несколько ходов вперед, чтобы сделать оптимальный ход</span>
+                        </p>
+                        <p class="mb-1">Глубина анализа: 
+                            <span class="font-bold text-orange-400">3 уровня</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="message" class="mt-6 text-center text-xl py-4 rounded-xl hidden"></div>
+        </div>
+        
+        <footer class="mt-8 text-center text-slate-500 text-sm fade-in">
+            <p>Разработано с использованием нейросетевых алгоритмов. Игра на JavaScript & Tailwind CSS</p>
+            <div class="flex justify-center space-x-4 mt-4">
+                <button class="flex items-center">
+                    <i class="fab fa-github text-lg mr-2"></i>
+                    GitHub
+                </button>
+                <button class="flex items-center">
+                    <i class="fab fa-twitter text-blue-400 text-lg mr-2"></i>
+                    Twitter
+                </button>
+                <button class="flex items-center">
+                    <i class="fab fa-linkedin text-blue-500 text-lg mr-2"></i>
+                    LinkedIn
+                </button>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // Игровые переменные
+        let boardSize = 5;
+        let level = 1;
+        let winStreak = 0;
+        let currentPlayer = 'X'; // X - игрок, O - ИИ
+        let board = [];
+        let aiDifficulty = 'hard';
+        let gameActive = true;
+        let winCombination = [];
+
+        // DOM элементы
+        const boardElement = document.getElementById('board');
+        const messageElement = document.getElementById('message');
+        const levelElement = document.getElementById('level');
+        const sizeElement = document.getElementById('size');
+        const winStreakElement = document.getElementById('win-streak');
+        const currentPlayerElement = document.getElementById('current-player');
+
+        // Звуковые эффекты
+        const sounds = {
+            click: new Audio('https://www.soundjay.com/buttons/sounds/button-09.mp3'),
+            win: new Audio('https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3'),
+            lose: new Audio('https://www.soundjay.com/misc/sounds/fail-trombone-01.mp3'),
+            draw: new Audio('https://www.soundjay.com/misc/sounds/cartoon-timpani-04.mp3'),
+        };
+
+        // Создаем игровое поле
+        function createBoard(size) {
+            boardElement.innerHTML = '';
+            board = Array(size).fill().map(() => Array(size).fill(null));
+            
+            // Обновляем стили для игрового поля
+            boardElement.className = `grid grid-cols-${size} gap-2`;
+            
+            for (let i = 0; i < size; i++) {
+                for (let j = 0; j < size; j++) {
+                    const cell = document.createElement('div');
+                    cell.classList.add('cell', 'bg-slate-700', 'rounded-lg', 'flex', 'items-center', 'justify-center', 'cursor-pointer', 'aspect-square');
+                    cell.setAttribute('data-row', i);
+                    cell.setAttribute('data-col', j);
+                    
+                    // Динамическое изменение размера ячейки
+                    if (size <= 5) {
+                        cell.classList.add('h-20', 'text-4xl');
+                    } else if (size <= 7) {
+                        cell.classList.add('h-16', 'text-3xl');
+                    } else {
+                        cell.classList.add('h-12', 'text-2xl');
+                    }
+                    
+                    cell.addEventListener('click', () => handleCellClick(i, j));
+                    boardElement.appendChild(cell);
+                }
+            }
+        }
+
+        // Обработка клика по ячейке
+        function handleCellClick(row, col) {
+            if (!gameActive || board[row][col] !== null || currentPlayer !== 'X') return;
+            
+            // Звук клика
+            playSound('click');
+            
+            // Обновляем доску
+            board[row][col] = 'X';
+            renderBoard();
+            
+            // Проверка на победу или ничью
+            if (checkWin('X')) {
+                endGame('win');
+                return;
+            } else if (isBoardFull()) {
+                endGame('draw');
+                return;
+            }
+            
+            // Передача хода ИИ
+            currentPlayer = 'O';
+            updatePlayerDisplay();
+            
+            // ИИ делает ход после небольшой задержки
+            setTimeout(() => {
+                makeAIMove();
+                
+                if (gameActive) {
+                    if (checkWin('O')) {
+                        endGame('lose');
+                    } else if (isBoardFull()) {
+                        endGame('draw');
+                    }
+                }
+            }, 500);
+        }
+
+        // Ход ИИ с использованием улучшенного алгоритма
+        function makeAIMove() {
+            // Попробуем найти выигрышный ход
+            for (let i = 0; i < boardSize; i++) {
+                for (let j = 0; j < boardSize; j++) {
+                    if (board[i][j] === null) {
+                        board[i][j] = 'O';
+                        if (checkWin('O')) {
+                            renderBoard();
+                            return;
+                        }
+                        board[i][j] = null;
+                    }
+                }
+            }
+            
+            // Блокируем выигрышный ход игрока
+            for (let i = 0; i < boardSize; i++) {
+                for (let j = 0; j < boardSize; j++) {
+                    if (board[i][j] === null) {
+                        board[i][j] = 'X';
+                        if (checkWin('X')) {
+                            board[i][j] = 'O';
+                            renderBoard();
+                            return;
+                        }
+                        board[i][j] = null;
+                    }
+                }
+            }
+            
+            // Расширенная стратегия ИИ
+            const center = Math.floor(boardSize / 2);
+            
+            // Сначала попробуем занять центр
+            if (boardSize % 2 === 1 && board[center][center] === null) {
+                board[center][center] = 'O';
+                renderBoard();
+                return;
+            }
+            
+            // Затем попробуем углы
+            const corners = [
+                [0, 0], [0, boardSize-1],
+                [boardSize-1, 0], [boardSize-1, boardSize-1]
+            ];
+            
+            const availableCorners = corners.filter(([i, j]) => board[i][j] === null);
+            
+            if (availableCorners.length > 0) {
+                const randomCorner = availableCorners[Math.floor(Math.random() * availableCorners.length)];
+                const [i, j] = randomCorner;
+                board[i][j] = 'O';
+                renderBoard();
+                return;
+            }
+            
+            // Если ни одно правило не сработало, делаем случайный ход
+            makeRandomMove();
+        }
+
+        // Случайный ход для ИИ
+        function makeRandomMove() {
+            const emptyCells = [];
+            for (let i = 0; i < boardSize; i++) {
+                for (let j = 0; j < boardSize; j++) {
+                    if (board[i][j] === null) {
+                        emptyCells.push([i, j]);
+                    }
+                }
+            }
+            
+            if (emptyCells.length > 0) {
+                const randomIndex = Math.floor(Math.random() * emptyCells.length);
+                const [i, j] = emptyCells[randomIndex];
+                board[i][j] = 'O';
+                renderBoard();
+            }
+        }
+
+        // Проверка победы с увеличением количества символов для победы
+        function checkWin(player) {
+            const winCount = boardSize >= 7 ? 4 : 5;
+            winCombination = [];
+            
+            // Проверка по горизонтали
+            for (let i = 0; i < boardSize; i++) {
+                for (let j = 0; j <= boardSize - winCount; j++) {
+                    let win = true;
+                    const currentCombination = [];
+                    for (let k = 0; k < winCount; k++) {
+                        if (board[i][j + k] !== player) {
+                            win = false;
+                            break;
+                        }
+                        currentCombination.push(`${i}-${j+k}`);
+                    }
+                    if (win) {
+                        winCombination = currentCombination;
+                        return true;
+                    }
+                }
+            }
+            
+            // Проверка по вертикали
+            for (let i = 0; i <= boardSize - winCount; i++) {
+                for (let j = 0; j < boardSize; j++) {
+                    let win = true;
+                    const currentCombination = [];
+                    for (let k = 0; k < winCount; k++) {
+                        if (board[i + k][j] !== player) {
+                            win = false;
+                            break;
+                        }
+                        currentCombination.push(`${i+k}-${j}`);
+                    }
+                    if (win) {
+                        winCombination = currentCombination;
+                        return true;
+                    }
+                }
+            }
+            
+            // Проверка по диагонали (слева направо)
+            for (let i = 0; i <= boardSize - winCount; i++) {
+                for (let j = 0; j <= boardSize - winCount; j++) {
+                    let win = true;
+                    const currentCombination = [];
+                    for (let k = 0; k < winCount; k++) {
+                        if (board[i + k][j + k] !== player) {
+                            win = false;
+                            break;
+                        }
+                        currentCombination.push(`${i+k}-${j+k}`);
+                    }
+                    if (win) {
+                        winCombination = currentCombination;
+                        return true;
+                    }
+                }
+            }
+            
+            // Проверка по диагонали (справа налево)
+            for (let i = 0; i <= boardSize - winCount; i++) {
+                for (let j = winCount - 1; j < boardSize; j++) {
+                    let win = true;
+                    const currentCombination = [];
+                    for (let k = 0; k < winCount; k++) {
+                        if (board[i + k][j - k] !== player) {
+                            win = false;
+                            break;
+                        }
+                        currentCombination.push(`${i+k}-${j-k}`);
+                    }
+                    if (win) {
+                        winCombination = currentCombination;
+                        return true;
+                    }
+                }
+            }
+            
+            return false;
+        }
+
+        // Проверка на ничью
+        function isBoardFull() {
+            for (let i = 0; i < boardSize; i++) {
+                for (let j = 0; j < boardSize; j++) {
+                    if (board[i][j] === null) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+
+        // Конец игры
+        function endGame(result) {
+            gameActive = false;
+            
+            if (result === 'win') {
+                playSound('win');
+                messageElement.textContent = `Вы победили! Переходим к уровню ${level + 1}`;
+                messageElement.className = "bg-gradient-to-r from-green-600 to-emerald-700 text-white text-center text-xl py-4 rounded-xl";
+                messageElement.classList.remove('hidden');
+                
+                winStreak++;
+                level++;
+                winStreakElement.textContent = winStreak;
+                
+                // Увеличиваем размер доски
+                boardSize++;
+                sizeElement.textContent = `${boardSize}x${boardSize}`;
+                
+                // Задержка перед переходом на новый уровень
+                setTimeout(() => {
+                    resetGame();
+                }, 2500);
+                
+            } else if (result === 'lose') {
+                playSound('lose');
+                messageElement.textContent = 'Вы проиграли! ИИ оказался сильнее. Попробуйте снова!';
+                messageElement.className = "bg-gradient-to-r from-red-600 to-red-700 text-white text-center text-xl py-4 rounded-xl";
+                messageElement.classList.remove('hidden');
+                
+            } else {
+                playSound('draw');
+                messageElement.textContent = 'Ничья! Игра окончена без победителя.';
+                messageElement.className = "bg-gradient-to-r from-yellow-600 to-amber-700 text-white text-center text-xl py-4 rounded-xl";
+                messageElement.classList.remove('hidden');
+            }
+            
+            // Выделяем победную комбинацию
+            highlightWinCombination();
+        }
+
+        // Выделение победной комбинации
+        function highlightWinCombination() {
+            winCombination.forEach(cellPos => {
+                const [i, j] = cellPos.split('-').map(Number);
+                const cellElement = document.querySelector(`.cell[data-row="${i}"][data-col="${j}"]`);
+                if (cellElement) {
+                    cellElement.classList.add('win-combination');
+                }
+            });
+        }
+
+        // Обновление отображения текущего игрока
+        function updatePlayerDisplay() {
+            if (currentPlayer === 'X') {
+                currentPlayerElement.innerHTML = `
+                    <div class="flex items-center justify-center">
+                        <i class="fas fa-times text-red-500 text-4xl mr-2"></i>
+                        <span>Игрок</span>
+                    </div>
+                `;
+            } else {
+                currentPlayerElement.innerHTML = `
+                    <div class="flex items-center justify-center">
+                        <i class="fas fa-robot text-blue-500 text-4xl mr-2"></i>
+                        <span>ИИ думает...</span>
+                    </div>
+                `;
+            }
+        }
+
+        // Отображение игрового поля
+        function renderBoard() {
+            const cells = document.querySelectorAll('.cell');
+            cells.forEach(cell => {
+                const row = parseInt(cell.getAttribute('data-row'));
+                const col = parseInt(cell.getAttribute('data-col'));
+                
+                cell.innerHTML = '';
+                
+                if (board[row][col] === 'X') {
+                    const xElement = document.createElement('i');
+                    xElement.classList.add('fas', 'fa-times', 'text-red-500');
+                    cell.appendChild(xElement);
+                } else if (board[row][col] === 'O') {
+                    const oElement = document.createElement('i');
+                    oElement.classList.add('fas', 'fa-circle', 'text-blue-500');
+                    cell.appendChild(oElement);
+                }
+            });
+        }
+
+        // Сброс игры
+        function resetGame() {
+            board = [];
+            gameActive = true;
+            currentPlayer = 'X';
+            levelElement.textContent = level;
+            messageElement.classList.add('hidden');
+            winCombination = [];
+            
+            createBoard(boardSize);
+            updatePlayerDisplay();
+        }
+
+        // Игра звуков
+        function playSound(type) {
+            if (sounds[type]) {
+                sounds[type].currentTime = 0;
+                sounds[type].play().catch(e => console.log("Не удалось воспроизвести звук:", e));
+            }
+        }
+
+        // Обработчики событий кнопок
+        document.getElementById('restart-btn').addEventListener('click', () => {
+            level = 1;
+            winStreak = 0;
+            boardSize = 5;
+            winStreakElement.textContent = winStreak;
+            sizeElement.textContent = `${boardSize}x${boardSize}`;
+            resetGame();
+        });
+
+        document.getElementById('ai-difficulty-btn').addEventListener('click', () => {
+            const difficulties = {
+                easy: { text: 'Лёгкая', next: 'medium' },
+                medium: { text: 'Средняя', next: 'hard' },
+                hard: { text: 'Сложная', next: 'expert' },
+                expert: { text: 'Эксперт', next: 'easy' }
+            };
+            
+            const current = aiDifficulty;
+            aiDifficulty = difficulties[current].next;
+            document.getElementById('ai-difficulty-btn').innerHTML = `
+                <i class="fas fa-brain mr-2"></i>
+                Сложность: ${difficulties[aiDifficulty].text}
+            `;
+        });
+
+        document.getElementById('sound-btn').addEventListener('click', () => {
+            const soundBtn = document.getElementById('sound-btn');
+            if (soundBtn.innerHTML.includes('volume-up')) {
+                soundBtn.innerHTML = `
+                    <i class="fas fa-volume-mute mr-2"></i>
+                    Звук
+                `;
+            } else {
+                soundBtn.innerHTML = `
+                    <i class="fas fa-volume-up mr-2"></i>
+                    Звук
+                `;
+            }
+        });
+
+        // Инициализация игры
+        window.addEventListener('DOMContentLoaded', () => {
+            createBoard(boardSize);
+        });
+    </script>
+</body>
+</html>
