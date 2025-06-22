@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+    <title>Raccoon Games</title>
+    <script src="tailwind.js"></script>
+      <link rel="stylesheet" href="fontawesome-free-6.7.2-web/css/all.min.css">
+    <div class="coming-soon" id="comingSoon">
+        <div class="text-center text-cosmic-300">
+            <i class="fas fa-rocket text-4xl mb-2 animate-bounce"></i>
+            <script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="theme.js"></script>
+
+            <div>Скоро в космосе!</div>
+        </div>
+    </div>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        cosmic: {
+                            100: '#e0e7ff',
+                            200: '#c7d2fe',
+                            300: '#a5b4fc',
+                            400: '#818cf8',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            800: '#3730a3',
+                            900: '#312e81',
+                        },
+                        nebula: {
+                            100: '#f0f9ff',
+                            200: '#e0f2fe',
+                            300: '#bae6fd',
+                            400: '#7dd3fc',
+                            500: '#38bdf8',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            800: '#075985',
+                            900: '#0c4a6e',
+                        },
+                        space: {
+                            100: '#111827',
+                            200: '#1f2937',
+                            300: '#374151',
+                            400: '#4b5563',
+                            500: '#6b7280',
+                            600: '#9ca3af',
+                            700: '#d1d5db',
+                            800: '#e5e7eb',
+                            900: '#f3f4f6',
+                        }
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'spin-slow': 'spin 20s linear infinite',
+                        'meteor': 'meteor 5s linear infinite',
+                    },
+                    keyframes: {
+                        meteor: {
+                            '0%': { transform: 'rotate(215deg) translateX(0)', opacity: '1' },
+                            '70%': { opacity: '1' },
+                            '100%': { transform: 'rotate(215deg) translateX(-500px)', opacity: '0' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+
+
+            /* Защита от копирования */
+        body {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            touch-action: manipulation;
+        }
+        
+        /* Защита от контекстного меню */
+        body {
+            pointer-events: auto;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+        
+        @keyframes shake {
+            0% { transform: rotate(0deg); }
+            25% { transform: rotate(5deg); }
+            50% { transform: rotate(0deg); }
+            75% { transform: rotate(-5deg); }
+            100% { transform: rotate(0deg); }
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        @keyframes stars {
+            0% { background-position: 0 0; }
+            100% { background-position: -10000px 5000px; }
+        }
+        
+        .game-card {
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            perspective: 1000px;
+            animation: fadeIn 0.5s ease-out forwards;
+            opacity: 0;
+            transform: translateY(20px);
+            background: rgba(17, 24, 39, 0.7);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            backdrop-filter: blur(10px);
+        }
+        
+        .game-card:hover {
+            transform: translateY(-5px) scale(1.03);
+            box-shadow: 0 0 25px rgba(99, 102, 241, 0.5);
+            border: 1px solid rgba(99, 102, 241, 0.8);
+        }
+        
+        .game-card-inner {
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+        
+        .game-card:hover .game-card-inner {
+            transform: rotateY(10deg);
+        }
+        
+        .main-icon {
+            filter: drop-shadow(0 5px 5px rgba(0,0,0,0.2));
+        }
+        
+        body {
+            background-color: #111827;
+            min-height: 100vh;
+            overflow-x: hidden;
+            justify-content: flex-start; /* Изменено для прокрутки */
+            position: relative;
+        }
+        
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(99, 102, 241, 0.15) 0%, transparent 20%),
+                radial-gradient(circle at 80% 70%, rgba(38, 191, 255, 0.15) 0%, transparent 20%),
+                url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><circle cx="50" cy="50" r="0.5" fill="white" opacity="0.5"/></svg>');
+            background-size: 300px 300px;
+            animation: stars 200s linear infinite;
+            z-index: -1;
+        }
+        
+        .game-container {
+            background: rgba(17, 24, 39, 0.8);
+            border-radius: 16px;
+            box-shadow: 0 0 30px rgba(99, 102, 241, 0.3);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+        }
+        
+        .header-icon {
+            background: linear-gradient(135deg, #818cf8, #38bdf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .title-container {
+            animation: shake 5s ease-in-out;
+        }
+        
+        .nav-item.active {
+            color: #818cf8;
+        }
+        
+    
+        /* Анимации для футера */
+        .nav-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(17, 24, 39, 0.9);
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.3);
+            z-index: 100;
+            backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(99, 102, 241, 0.2);
+        }
+        
+
+        .footer-item {
+    flex: 1;
+    text-align: center;
+    min-width: 0;
+}
+
+        .nav-item {
+            transition: all 0.2s ease;
+        }
+        
+        .nav-item:hover {
+            transform: translateY(-5px);
+        }
+        
+        .nav-item.active {
+            color: #3B82F6;
+        }
+        
+        
+        
+       
+        
+        .meteor {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 300px;
+            height: 1px;
+            background: linear-gradient(90deg, rgba(255,255,255,0), rgba(99, 102, 241, 0.8));
+            transform: rotate(215deg);
+            transform-origin: left;
+            animation: meteor 5s linear infinite;
+            z-index: -1;
+        }
+        
+        .meteor::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: rgba(255,255,255,1);
+            box-shadow: 0 0 0 4px rgba(255,255,255,0.1),
+                        0 0 0 8px rgba(255,255,255,0.1),
+                        0 0 20px rgba(255,255,255,1);
+        }
+        
+        .planet {
+            position: absolute;
+            border-radius: 50%;
+            z-index: -1;
+            filter: drop-shadow(0 0 10px rgba(99, 102, 241, 0.5));
+        }
+        
+        .planet-1 {
+            width: 150px;
+            height: 150px;
+            background: radial-gradient(circle at 30% 30%, #6366f1, #3730a3);
+            top: -50px;
+            right: -50px;
+            animation: float 8s ease-in-out infinite;
+        }
+        
+        .planet-2 {
+            width: 80px;
+            height: 80px;
+            background: radial-gradient(circle at 30% 30%, #38bdf8, #0284c7);
+            bottom: 100px;
+            left: -30px;
+            animation: float 10s ease-in-out infinite 2s;
+        }
+        
+        .game-icon {
+            background: linear-gradient(135deg, rgba(129, 140, 248, 0.2), rgba(56, 189, 248, 0.2));
+            border: 1px solid rgba(129, 140, 248, 0.3);
+        }
+        
+        .game-locked {
+            position: relative;
+        }
+        
+        .game-locked::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 10px;
+            z-index: 2;
+        }
+        
+        .game-locked .lock-icon {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 2rem;
+            z-index: 3;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+        }
+        
+        .coming-soon {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: rgba(17, 24, 39, 0.9);
+            border: 1px solid rgba(99, 102, 241, 0.5);
+            box-shadow: 0 0 30px rgba(99, 102, 241, 0.5);
+            padding: 1.5rem 2rem;
+            border-radius: 10px;
+            font-size: 1.5rem;
+            z-index: 9999;
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+        
+        .coming-soon.show {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+        }
+
+        html, body {
+    overflow-x: hidden;
+    margin: 0;
+    padding: 0;
+}
+
+    </style>
+</head>
+<body class="min-h-screen flex flex-col text-white">
+    <!-- Космические элементы -->
+    <div class="planet planet-1"></div>
+    <div class="planet planet-2"></div>
+    <div class="meteor" style="animation-delay: 1s; top: 20%; left: 80%;"></div>
+    <div class="meteor" style="animation-delay: 3s; top: 60%; left: 30%;"></div>
+    
+    <!-- Основной контейнер -->
+    <div class="container mx-auto px-4 py-8 flex-grow mb-20">
+        <div class="game-container p-6">
+            <!-- Заголовок с анимацией -->
+            <div class="flex items-center justify-center mb-8 title-container">
+                <div class="text-center relative">
+                    <div class="absolute -top-8 -left-8 w-16 h-16 rounded-full bg-nebula-500 opacity-20 animate-pulse-slow"></div>
+                    <div class="absolute -bottom-8 -right-8 w-16 h-16 rounded-full bg-cosmic-500 opacity-20 animate-pulse-slow"></div>
+                    <h1 class="text-4xl font-bold mb-2 relative z-10">
+                        <i class="fas fa-gamepad header-icon text-5xl mr-2"></i>
+                        <span class="bg-clip-text text-transparent bg-gradient-to-r from-cosmic-400 to-nebula-400">Raccoon Space</span>
+                    </h1>
+                    <p class="text-nebula-300">Выберите игру и отправляйтесь в космическое приключение!</p>
+                </div>
+            </div>
+            
+            <!-- Сетка игр -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-5">
+          <!-- Игра 2: Змейка (заблокирована) -->
+                <div class="game-card rounded-xl p-4 shadow-md game-locked" style="animation-delay: 0.2s">
+                    <i class="fas fa-lock lock-icon"></i>
+                    <div class="game-card-inner">
+                        <div class="flex flex-col items-center">
+                            <div class="game-icon p-4 rounded-full mb-3">
+                                <i class="fas fa-worm text-cosmic-300 text-2xl"></i>
+                            </div>
+                            <h3 class="font-semibold text-center">Космическая Змейка</h3>
+                            <p class="text-xs text-nebula-300 text-center mt-1">Собери звезды</p>
+                        </div>
+                    </div>
+                </div>
+
+              
+                
+              
+                
+                <!-- Игра 3: Платформер -->
+                <a href="platformer.html" class="game-card rounded-xl p-4 shadow-md" style="animation-delay: 0.3s">
+                    <div class="game-card-inner">
+                        <div class="flex flex-col items-center">
+                            <div class="game-icon p-4 rounded-full mb-3">
+                                <i class="fas fa-running text-cosmic-300 text-2xl"></i>
+                            </div>
+                            <h3 class="font-semibold text-center">Космический Прыг</h3>
+                            <p class="text-xs text-nebula-300 text-center mt-1">Прыгай по платформам</p>
+                        </div>
+                    </div>
+                </a>
+                  <!-- Игра 1: Тетрис -->
+                <a href="tetris.html" class="game-card rounded-xl p-4 shadow-md" style="animation-delay: 0.1s">
+                    <div class="game-card-inner">
+                        <div class="flex flex-col items-center">
+                            <div class="game-icon p-4 rounded-full mb-3">
+                                <i class="fas fa-cubes text-nebula-300 text-2xl"></i>
+                            </div>
+                            <h3 class="font-semibold text-center">Тетрис</h3>
+                            <p class="text-xs text-nebula-300 text-center mt-1">Собери галактику</p>
+                        </div>
+                    </div>
+                </a>
+                <!-- Игра 4: Арканоид (заблокирована) -->
+                <div class="game-card rounded-xl p-4 shadow-md game-locked" style="animation-delay: 0.4s">
+                    <i class="fas fa-lock lock-icon"></i>
+                    <div class="game-card-inner">
+                        <div class="flex flex-col items-center">
+                            <div class="game-icon p-4 rounded-full mb-3">
+                                <i class="fas fa-table-tennis text-cosmic-300 text-2xl"></i>
+                            </div>
+                            <h3 class="font-semibold text-center">Космический Арканоид</h3>
+                            <p class="text-xs text-nebula-300 text-center mt-1">Разбей астероиды</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Игра 5: Крестики-нолики (заблокирована) -->
+                <div class="game-card rounded-xl p-4 shadow-md game-locked" style="animation-delay: 0.5s">
+                    <i class="fas fa-lock lock-icon"></i>
+                    <div class="game-card-inner">
+                        <div class="flex flex-col items-center">
+                            <div class="game-icon p-4 rounded-full mb-3">
+                                <i class="fas fa-times text-nebula-300 text-2xl"></i>
+                            </div>
+                            <h3 class="font-semibold text-center">Космические XO</h3>
+                            <p class="text-xs text-nebula-300 text-center mt-1">Сражение с ИИ</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Футер с навигацией -->
+    <footer class="nav-footer">
+        <div class="container mx-auto px-0">
+            <div class="flex justify-between">
+                <!-- Меню -->
+                <a href="menu.html" class="footer-item nav-item flex flex-col items-center text-gray-600 hover:text-blue-500 py-3">
+                    <i class="fas fa-bars text-xl mb-1"></i>
+                    <span class="text-xs">Меню</span>
+                </a>
+                
+                <!-- Бизнес -->
+                <a href="business.html" class="footer-item nav-item flex flex-col items-center text-gray-600 hover:text-green-500 py-3">
+                    <i class="fas fa-business-time text-xl mb-1"></i>
+                    <span class="text-xs">Бизнес</span>
+                </a>
+                
+                <!-- Игры (активная) -->
+                <a href="gamess.html" class="footer-item nav-item flex flex-col items-center text-red-500 py-3">
+                    <i class="fas fa-gamepad main-icon text-2xl mb-1"></i>
+                    <span class="text-xs">Игры</span>
+                </a>
+                
+                <!-- Достижения -->
+                <a href="achievements.html" class="footer-item nav-item flex flex-col items-center text-gray-600 hover:text-yellow-500 py-3">
+                    <i class="fas fa-trophy text-xl mb-1"></i>
+                    <span class="text-xs">Достижения</span>
+                </a>
+                
+                <!-- Настройки -->
+                <a href="settings.html" class="footer-item nav-item flex flex-col items-center text-gray-600 hover:text-purple-500 py-3">
+                    <i class="fas fa-cog text-xl mb-1"></i>
+                    <span class="text-xs">Настройки</span>
+                </a>
+            </div>
+        </div>
+    </footer>
+    
+    <script>
+        
+        // Анимация при загрузке
+        document.addEventListener('DOMContentLoaded', function() {
+            // Handle locked game clicks
+            const lockedGames = document.querySelectorAll('.game-locked');
+            const comingSoon = document.getElementById('comingSoon');
+            
+            lockedGames.forEach(game => {
+                game.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // Show coming soon message
+                    comingSoon.classList.add('show');
+                    
+                    // Hide after 2 seconds
+                    setTimeout(() => {
+                        comingSoon.classList.remove('show');
+                    }, 2000);
+                    
+                    // Add shake effect to locked game
+                    this.style.animation = 'shake 0.5s ease';
+                    setTimeout(() => {
+                        this.style.animation = '';
+                    }, 500);
+                });
+            });
+            
+            // Добавляем небольшую задержку перед началом анимации
+            setTimeout(() => {
+                const gameCards = document.querySelectorAll('.game-card');
+                
+                gameCards.forEach((card, index) => {
+                    // Устанавливаем задержку для каждой карточки
+                    card.style.animationDelay = `${index * 0.1}s`;
+                });
+                
+                // Анимация для заголовка (только один раз при загрузке)
+                const title = document.querySelector('.title-container');
+                title.style.animationIterationCount = '1';
+                title.style.opacity = '1';
+                
+                // Плавное появление контейнера с играми
+                const gameContainer = document.querySelector('.game-container');
+                gameContainer.style.transition = 'opacity 0.5s ease-out';
+                gameContainer.style.opacity = '1';
+                
+                // Анимация для активной иконки в футере
+                const activeNavItem = document.querySelector('.nav-item.active i');
+                if (activeNavItem) {
+                    activeNavItem.style.animation = 'bounce 0.5s ease';
+                }
+                
+                // Создаем дополнительные метеоры
+                for (let i = 0; i < 3; i++) {
+                    createMeteor();
+                }
+            }, 100);
+            
+            // Создание случайных метеоров
+            function createMeteor() {
+                const meteor = document.createElement('div');
+                meteor.className = 'meteor';
+                meteor.style.top = Math.random() * 100 + '%';
+                meteor.style.left = Math.random() * 100 + '%';
+                meteor.style.animationDelay = Math.random() * 5 + 's';
+                document.body.appendChild(meteor);
+                
+                setTimeout(() => {
+                    meteor.remove();
+                    createMeteor();
+                }, 5000);
+            }
+            
+            // Обработчики для анимации при наведении на иконки футера
+            const navItems = document.querySelectorAll('.nav-item:not(.active)');
+            navItems.forEach(item => {
+                item.addEventListener('mouseenter', function() {
+                    const icon = this.querySelector('i');
+                    if (icon) {
+                        icon.style.animation = 'pulse 0.5s ease';
+                        setTimeout(() => {
+                            icon.style.animation = '';
+                        }, 500);
+                    }
+                });
+            });
+            
+            // Обработчики для анимации игровых карточек при наведении
+            const gameCards = document.querySelectorAll('.game-card');
+            gameCards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    const iconContainer = this.querySelector('.game-card-inner div:first-child');
+                    if (iconContainer) {
+                        iconContainer.style.animation = 'pulse 0.5s ease';
+                        setTimeout(() => {
+                            iconContainer.style.animation = '';
+                        }, 500);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
